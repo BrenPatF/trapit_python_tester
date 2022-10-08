@@ -1,0 +1,116 @@
+{
+    "meta":  {
+                 "title":  "title",
+                 "delimiter":  "|",
+                 "inp":  {
+                             "Unit Test":  [
+                                               "Title",
+                                               "Delimiter"
+                                           ],
+                             "Input Fields":  [
+                                                  "Group",
+                                                  "Field"
+                                              ],
+                             "Output Fields":  [
+                                                   "Group",
+                                                   "Field"
+                                               ],
+                             "Scenario":  [
+                                              "Scenario",
+                                              "Active Y/N"
+                                          ],
+                             "Input Values":  [
+                                                  "Scenario",
+                                                  "Group",
+                                                  "Row CSV"
+                                              ],
+                             "Expected Values":  [
+                                                     "Scenario",
+                                                     "Group",
+                                                     "Row CSV"
+                                                 ],
+                             "Actual Values":  [
+                                                   "Scenario",
+                                                   "Group",
+                                                   "Row CSV"
+                                               ]
+                         },
+                 "out":  {
+                             "Unit Test":  [
+                                               "Title",
+                                               "Delimiter"
+                                           ],
+                             "Input Fields":  [
+                                                  "Group",
+                                                  "Field"
+                                              ],
+                             "Output Fields":  [
+                                                   "Group",
+                                                   "Field"
+                                               ],
+                             "Input Values":  [
+                                                  "Scenario",
+                                                  "Group",
+                                                  "Row CSV"
+                                              ],
+                             "Expected Values":  [
+                                                     "Scenario",
+                                                     "Group",
+                                                     "Row CSV"
+                                                 ],
+                             "Actual Values":  [
+                                                   "Scenario",
+                                                   "Group",
+                                                   "Row CSV"
+                                               ]
+                         }
+             },
+    "scenarios":  {
+                      "scenario 1":  {
+                                         "active_yn":  "Y",
+                                         "inp":  {
+                                                     "Unit Test":  [
+                                                                       "|"
+                                                                   ],
+                                                     "Input Fields":  [
+                                                                          "|"
+                                                                      ],
+                                                     "Output Fields":  [
+                                                                           "|"
+                                                                       ],
+                                                     "Scenario":  [
+                                                                      "|"
+                                                                  ],
+                                                     "Input Values":  [
+                                                                          "||"
+                                                                      ],
+                                                     "Expected Values":  [
+                                                                             "||"
+                                                                         ],
+                                                     "Actual Values":  [
+                                                                           "||"
+                                                                       ]
+                                                 },
+                                         "out":  {
+                                                     "Unit Test":  [
+                                                                       "|"
+                                                                   ],
+                                                     "Input Fields":  [
+                                                                          "|"
+                                                                      ],
+                                                     "Output Fields":  [
+                                                                           "|"
+                                                                       ],
+                                                     "Input Values":  [
+                                                                          "||"
+                                                                      ],
+                                                     "Expected Values":  [
+                                                                             "||"
+                                                                         ],
+                                                     "Actual Values":  [
+                                                                           "||"
+                                                                       ]
+                                                 }
+                                     }
+                  }
+}

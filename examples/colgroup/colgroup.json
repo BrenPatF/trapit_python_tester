@@ -1,0 +1,192 @@
+{ "meta": {
+    "title": "Col Group",
+    "inp": {
+        "Log": [
+            "Line"
+        ],
+        "Scalars": [
+            "Delimiter",
+            "Column#"
+        ],
+        "Lines": [
+            "Line"
+        ]
+    },
+    "out": {
+        "Log": [
+            "#Lines",
+            "Date Offset",
+            "Text"
+        ],
+        "listAsIs": [
+            "#Instances"
+        ],
+        "sortByKey": [
+            "Key",
+            "Value"
+        ],
+        "sortByValue": [
+            "Key",
+            "Value"
+        ]
+    }
+},
+"scenarios" : { 
+   "Lines: None; Key column: NA": 
+   {
+    "active_yn" : "Y",
+    "inp": {
+        "Log": [
+            "Log line 1"
+        ],
+        "Scalars": [
+            ",|9"
+        ],
+        "Lines": [
+        ]
+    },
+    "out": {
+        "Log": [
+            "2|IN [0,2000]|LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ',', column 9/"
+        ],
+        "listAsIs": [
+            "0"
+        ],
+        "sortByKey": [
+        ],
+        "sortByValue": [
+        ]
+    }
+}
+,
+   "Lines: 1; Key column: First": 
+   {
+    "active_yn" : "Y",
+    "inp": {
+        "Log": [
+        ],
+        "Scalars": [
+            ",|0"
+        ],
+        "Lines": [
+            "X"
+        ]
+    },
+    "out": {
+        "Log": [
+            "1|IN [0,2000]|LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ',', column 0/"
+        ],
+        "listAsIs": [
+            "1"
+        ],
+        "sortByKey": [
+            "X|1"
+        ],
+        "sortByValue": [
+            "X|1"
+        ]
+    }
+}
+,
+   "Lines: Multiple; Key column: First": 
+   {
+    "active_yn" : "Y",
+    "inp": {
+        "Log": [
+            "Log line 1"
+        ],
+        "Scalars": [
+            ";;|0"
+        ],
+        "Lines": [
+            "12345678901234567890123456789012345678901234567890;;0;;1;;2;;3;;4;;5;;6;;7;;8",
+            "12345678901234567890123456789012345678901234567890;;0;;1;;2;;3;;4;;5;;6;;7;;8",
+            "abc;;0;;1;;2;;3;;4;;5;;6;;7;;8"
+        ]
+    },
+    "out": {
+        "Log": [
+            "2|IN [0,2000]|LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ';;', column 0/"
+        ],
+        "listAsIs": [
+            "2"
+        ],
+        "sortByKey": [
+            "12345678901234567890123456789012345678901234567890|2",
+            "abc|1"
+        ],
+        "sortByValue": [
+            "abc|1",
+            "12345678901234567890123456789012345678901234567890|2"
+        ]
+    }
+}
+,
+   "Lines: Multiple; Key column: Last":
+   {
+    "active_yn" : "Y",
+    "inp": {
+        "Log": [
+            "Log line 1"
+        ],
+        "Scalars": [
+            ";;|9"
+        ],
+        "Lines": [
+            "0;;1;;2;;3;;4;;5;;6;;7;;8;;12345678901234567890123456789012345678901234567890",
+            "0;;1;;2;;3;;4;;5;;6;;7;;8;;abc",
+            "0;;1;;2;;3;;4;;5;;6;;7;;8;;abc"
+        ]
+    },
+    "out": {
+        "Log": [
+            "2|IN [0,2000]|LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ';;', column 9/"
+        ],
+        "listAsIs": [
+            "2"
+        ],
+        "sortByKey": [
+            "12345678901234567890123456789012345678901234567890|1",
+            "abc|2"
+        ],
+        "sortByValue": [
+            "12345678901234567890123456789012345678901234567890|1",
+            "abc|2"
+        ]
+    }
+}
+,
+   "Lines: Multiple; Key column: Middle":
+   {
+    "active_yn" : "Y",
+    "inp": {
+        "Log": [
+            "Log line 1"
+        ],
+        "Scalars": [
+            ";;|5"
+        ],
+        "Lines": [
+            "0;;1;;2;;3;;4;;12345678901234567890123456789012345678901234567890;;5;;6;;7;;8",
+            "0;;1;;2;;3;;4;;abc;;5;;6;;7;;8",
+            "0;;1;;2;;3;;4;;12345678901234567890123456789012345678901234567890;;5;;6;;7;;8"
+        ]
+    },
+    "out": {
+        "Log": [
+            "2|IN [0,2000]|LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ';;', column 5/"
+        ],
+        "listAsIs": [
+            "3"
+        ],
+        "sortByKey": [
+            "12345678901234567890123456789012345678901234567890|2",
+            "abc|1"
+        ],
+        "sortByValue": [
+            "abc|1",
+            "12345678901234567890123456789012345678901234567890|2"
+        ]
+    }
+}
+}}

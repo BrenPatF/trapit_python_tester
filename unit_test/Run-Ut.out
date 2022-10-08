@@ -1,0 +1,15 @@
+Executing:  py testtrapit.py at 08-Oct-22 11:12:28
+Format the unit test results from folder: C:\Users\Brend\OneDrive\Documents\demo\npm\node_modules\trapit\
+
+Copying C:\Users\Brend\OneDrive\Documents\GitHub\trapit_python_tester\unit_test\trapit_py_out.json to .\externals\python
+
+Unit Test Results Summary for Folder ./externals/python
+=======================================================
+ File                 Title               Inp Groups  Out Groups  Tests  Fails  Folder            
+--------------------  ------------------  ----------  ----------  -----  -----  ------------------
+*colgroup_out.json    Col Group                    3           4      5      1  col-group         
+ helloworld_out.json  Hello World                  0           1      1      0  hello-world       
+ trapit_py_out.json   Python Unit Tester           7           6      4      0  python-unit-tester
+
+1 externals failed, see ./externals/python for scenario listings
+colgroup_out.json
