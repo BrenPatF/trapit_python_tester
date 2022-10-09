@@ -43,7 +43,7 @@ The main features of the design pattern are:
 - The wrapper function specific to the UUT is called within a loop over scenarios by a library test driver module
 - The library test driver module reads data for all scenarios in JSON format, with both inputs to the UUT and the expected outputs, and metadata records describing the specific data structure
 - The module takes the actual outputs from the wrapper function and merges them in alongside the expected outputs to create an output results object
-- This output results object is processed by the module to generate the results formatted as a summary page, with a detail page for each scenario, in both HTML and text versions
+- This output results object is processed by a JavaScript module to generate the results formatted as a summary page, with a detail page for each scenario, in both HTML and text versions
 
 At a high level the design pattern:
 
@@ -1372,6 +1372,7 @@ SCENARIO 1: Zero input groups, 1 of other entities where possible; active scenar
 - [Trapit Oracle Tester - GitHub module](https://github.com/BrenPatF/trapit_oracle_tester)
 - [Powershell Utilities - GitHub module](https://github.com/BrenPatF/powershell_utils)
 - [Trapit Python Tester - Python Package Index module](https://pypi.org/project/trapit/)
+- [Timer Set Python Code Timer - GitHub module](https://github.com/BrenPatF/timerset_python)
 
 ## License
 [&uarr; In This README...](#in-this-readme)<br />
