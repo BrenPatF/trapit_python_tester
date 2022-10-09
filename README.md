@@ -552,7 +552,7 @@ colgroup_out.json
 
 You can review the HTML formatted unit test results for the program here:
 
-- [Unit Test Report: Col Group](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester\examples\colgroup\col-group/col-group.html)
+- [Unit Test Report: Col Group](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/examples/colgroup/col-group/col-group.html)
 
 The formatted results files, both text and HTML, are available in the `col-group` subfolder. The summary report showing scenarios tested, in text format, along with the detailed report for scenario 5, are copied below:
 
@@ -764,7 +764,7 @@ colgroup_out.json
 
 You can review the HTML formatted unit test results for the program here:
 
-- [Unit Test Report: Col Group](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester\examples\colgroup\col-group/col-group.html)
+- [Unit Test Report: Hello World](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/examples/helloworld/hello-world/hello-world.html)
 
 The formatted results files, both text and HTML, are available in the `hello-world` subfolder. Here is the full set of results in text format:
 
@@ -1265,7 +1265,7 @@ colgroup_out.json
 
 You can review the HTML formatted unit test results here:
 
-- [Unit Test Report: Python Unit Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/main/unit_test/python-unit-tester/python-unit-tester.html)
+- [Unit Test Report: Python Unit Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/unit_test/python-unit-tester/python-unit-tester.html)
 
 #### Unit Test Report: Python Unit Tester
 [&uarr; Unit Test Results](#unit-test-results)<br />
