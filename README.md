@@ -10,7 +10,7 @@ The module supplies a simple utility for unit testing Python programs based on t
 
 There is a blog post on scenario selection in unit testing that may be of interest:
 
-- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/jekyll/update/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
+- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
 
 # In This README...
 [&darr; Background](#background)<br />
@@ -416,7 +416,7 @@ trapit.test_unit(INPUT_JSON, OUTPUT_JSON, purely_wrap_unit)
 [&darr; Composite Category Sets - colgroup](#composite-category-sets---colgroup)<br />
 [&darr; Scenario Category Mapping - colgroup](#scenario-category-mapping---colgroup)<br />
 
-This article, [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/jekyll/update/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html), explains how to derive unit test scenarios using a new approach called the SCAN method.
+This article, [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html), explains how to derive unit test scenarios using a new approach called the SCAN method.
 
 Following the method, in this section we identify the category sets for the problem, and tabulate the corresponding categories. We need to consider which category sets can be tested independently of each other, and which need to be considered in combination. We can then obtain a set of scenarios to cover all relevant combinations of categories.
 
@@ -1366,7 +1366,7 @@ SCENARIO 1: Zero input groups, 1 of other entities where possible; active scenar
 [&uarr; In This README...](#in-this-readme)<br />
 
 - [Database API Viewed As A Mathematical Function: Insights into Testing](https://www.slideshare.net/brendanfurey7/database-api-viewed-as-a-mathematical-function-insights-into-testing)
-- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/jekyll/update/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
+- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
 - [Trapit JavaScript Tester/Formatter - GitHub module](https://github.com/BrenPatF/trapit_nodejs_tester)
 - [Trapit Python Tester - GitHub module](https://github.com/BrenPatF/trapit_python_tester)
 - [Trapit Oracle Tester - GitHub module](https://github.com/BrenPatF/trapit_oracle_tester)
