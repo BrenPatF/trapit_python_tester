@@ -199,7 +199,9 @@ def purely_wrap_unit(inp_groups): # input groups object
                 for i in scenarios[s][OUT][g][EXP]:
                     g_exp_values.append(s + DELIM + g + DELIM + i)
                 for i in scenarios[s][OUT][g][ACT]:
-                    g_act_values.append(s + DELIM + g + DELIM + re.sub(r'(File ")(.*?)(trapit_python_tester)', r'\1[ROOT FOLDER]\\\3', i))
+                    text = re.sub(r'File ".*?[\\/]+trapit\.py"', r'File "[ROOT FOLDER]\\trapit.py"', i)
+                    text = re.sub(r'File ".*?[\\/]+unit_test[\\/]+testtrapit\.py"', r'File "[ROOT FOLDER]\\unit_test\\testtrapit.py"', text)
+                    g_act_values.append(s + DELIM + g + DELIM + text)
     
         os.remove(INP_JSON_INNER)
         os.remove(OUT_JSON_INNER)

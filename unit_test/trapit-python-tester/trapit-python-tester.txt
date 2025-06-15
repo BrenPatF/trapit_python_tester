@@ -37,7 +37,7 @@ Unit Test Report: Trapit Python Tester
 
 Test scenarios: 0 failed of 31: SUCCESS
 =======================================
-Formatted: 15/6/2025, 12:17:14
+Formatted: 15/6/2025, 15:55:55
 
 SCENARIO 1: No input groups [Category Set: Input Group Multiplicity] {
 ======================================================================
@@ -5440,17 +5440,17 @@ SCENARIO 30: Unhandled exception [Category Set: Unhandled Exception] {
       GROUP 7: Actual Values {
       ========================
 
-            #  Scenario          Group                Row CSV                                                                                                                                                                                                                                                                                                                                         
-            -  ----------------  -------------------  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            #  Scenario          Group                Row CSV                                                                                                                                                                                                                                                                                               
+            -  ----------------  -------------------  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
             1  Inner scenario 1  Unhandled Exception  Exception thrown;Traceback (most recent call last):
-  File "[ROOT FOLDER]\trapit_python_tester\trapit.py", line 78, in callPWU
+  File "[ROOT FOLDER]\trapit.py", line 78, in callPWU
     act_obj = purely_wrap_unit(inp)
-  File "[ROOT FOLDER]\trapit_python_tester\unit_test\testtrapit.py", line 127, in purely_wrap_unit_inner
+  File "[ROOT FOLDER]\unit_test\testtrapit.py", line 127, in purely_wrap_unit_inner
     raise Exception('Exception thrown')
 Exception: Exception thrown
 
-            2  Inner scenario 2  Output Group 1       Expected value 2-1-1;Expected value 2-1-2                                                                                                                                                                                                                                                                                                       
-            3  Inner scenario 2  Output Group 2       Expected value 2-2-1;Expected value 2-2-2                                                                                                                                                                                                                                                                                                       
+            2  Inner scenario 2  Output Group 1       Expected value 2-1-1;Expected value 2-1-2                                                                                                                                                                                                                                                             
+            3  Inner scenario 2  Output Group 2       Expected value 2-2-1;Expected value 2-2-2                                                                                                                                                                                                                                                             
 
       } 0 failed of 3: SUCCESS
       ========================

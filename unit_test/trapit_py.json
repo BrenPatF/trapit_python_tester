@@ -2422,7 +2422,7 @@
           "Inner scenario 2|Output Group 2|Expected value 2-2-1;Expected value 2-2-2"
         ],
         "Actual Values": [
-          "Inner scenario 1|Unhandled Exception|Exception thrown;Traceback (most recent call last):\n  File \"[ROOT FOLDER]\\trapit_python_tester\\trapit.py\", line 78, in callPWU\n    act_obj = purely_wrap_unit(inp)\n  File \"[ROOT FOLDER]\\trapit_python_tester\\unit_test\\testtrapit.py\", line 127, in purely_wrap_unit_inner\n    raise Exception('Exception thrown')\nException: Exception thrown\n",
+          "Inner scenario 1|Unhandled Exception|Exception thrown;Traceback (most recent call last):\n  File \"[ROOT FOLDER]\\trapit.py\", line 78, in callPWU\n    act_obj = purely_wrap_unit(inp)\n  File \"[ROOT FOLDER]\\unit_test\\testtrapit.py\", line 127, in purely_wrap_unit_inner\n    raise Exception('Exception thrown')\nException: Exception thrown\n",
           "Inner scenario 2|Output Group 1|Expected value 2-1-1;Expected value 2-1-2",
           "Inner scenario 2|Output Group 2|Expected value 2-2-1;Expected value 2-2-2"
         ]
