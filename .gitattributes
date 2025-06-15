@@ -2,3 +2,4 @@
 * text=auto
 unit_test/*/* linguist-vendored
 examples/*/*/* linguist-vendored
+powershell_utils/** linguist-vendored
