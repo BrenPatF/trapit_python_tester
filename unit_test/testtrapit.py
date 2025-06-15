@@ -1,32 +1,33 @@
 ﻿'''*************************************************************************************************
 Name: testtrapit.py                    Author: Brendan Furey                       Date: 08-Oct-2022
 
-Code component in the Trapit Python Tester module, which has a utility function for unit testing
-with the Math Function Unit Testing design pattern, and some examples of use.
+Component script in the 'Trapit - Python Unit Testing' module, which facilitates unit testing in
+Oracle PL/SQL following 'The Math Function Unit Testing design pattern', as described here: 
 
-    GitHub: https://github.com/BrenPatF/trapit_python_tester
+    https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html
 
-The design pattern involves the use of JSON files for storing test scenario and metadata, with an
-input file including expected results, and an output file that has the actual results merged in.
+GitHub project for Python:
 
-The unit test driver utility function (trapit.test_unit) is called as effectively the main function
-of any specific unit test script. It reads the input JSON scenarios file, then loops over the
-scenarios making calls to a function passed in as a parameter from the calling script. The function
-acts as a 'pure' wrapper around calls to the unit under test. It is 'externally pure' in the sense
-that it is deterministic, and interacts externally only via parameters and return value. Where the
-unit under test reads inputs from file the wrapper writes them based on its parameters, and where
-the unit under test writes outputs to file the wrapper reads them and passes them out in its return
-value. Any file writing is reverted before exit. 
+    https://github.com/BrenPatF/trapit_python_tester
 
-The utility function comes with a unit test script that uses the utility to test itself; there are
-also two examples, each with main script and unit test script.
+At the heart of the design pattern there is a language-specific unit testing driver function. This
+function reads an input JSON scenarios file, then loops over the scenarios making calls to a
+function passed in as a parameter from the calling script. The passed function acts as a 'pure'
+wrapper around calls to the unit under test. It is 'externally pure' in the sense that it is
+deterministic, and interacts externally only via parameters and return value. Where the unit under
+test reads inputs from file the wrapper writes them based on its parameters, and where the unit
+under test writes outputs to file the wrapper reads them and passes them out in its return value.
+Any file writing is reverted before exit.
 
-Unit testing follows the Math Function Unit Testing design pattern, as described in:
+The driver function accumulates the output scenarios containing both expected and actual results
+in an object, from which a JavaScript function writes the results in HTML and text formats.
 
-    Trapit JavaScript Tester: https://github.com/BrenPatF/trapit_nodejs_tester#trapit
+In testing of non-JavaScript programs, the results object is written to a JSON file to be passed
+to the JavaScript formatter. In Python, the entry-point API, test_format, calls test_unit to write
+the JSON file, then calls the JavaScript formatter, format-external-file.js.
 
-The above JavaScript project includes a utility to format the output JSON files as HTML pages and
-plain text.
+The table shows the driver scripts for the relevant package: There are two examples of use, with
+main and test drivers, and a test driver for the test_unit function.
 ====================================================================================================
 |  Main/Test       |  Unit Module |  Notes                                                         |
 |==================================================================================================|
@@ -47,24 +48,23 @@ To run from root folder:
 $ py unit_test/testtrapit.py
 
 *************************************************************************************************'''
-import sys, os, json
+import sys, os, json, re
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import trapit
 
-ROOT = os.path.dirname(__file__) + '\\'
 DELIM = '|'
-
-INP_JSON,                OUT_JSON,                    INP_JSON_INNER,                OUT_JSON_INNER                = \
-ROOT + 'trapit_py.json', ROOT + 'trapit_py_out.json', ROOT + 'trapit_py_inner.json', ROOT + 'trapit_py_out_inner.json'
+ROOT = os.path.dirname(__file__)
+NPM_ROOT,                                  INP_JSON_INNER,                OUT_JSON_INNER                = \
+ROOT + '/../powershell_utils/TrapitUtils', ROOT + 'trapit_py_inner.json', ROOT + 'trapit_py_out_inner.json'
 
 OUT_GROUP,       SCE_INP = \
 'out_group_lis', 'sce_inp_lis'
 
-TITLE,   DELIMITER,   ACTIVE_YN,   UNIT_TEST,   META,   SCENARIOS,   INP,   OUT,   EXP,   ACT = \
-'title', 'delimiter', 'active_yn', 'Unit Test', 'meta', 'scenarios', 'inp', 'out', 'exp', 'act'
+TITLE,   DELIMITER,   ACTIVE_YN,   CAT_SET,        EXCEPTION_YN,   UNIT_TEST,   META,   SCENARIOS,   INP,   OUT,   EXP,   ACT = \
+'title', 'delimiter', 'active_yn', 'category_set', 'exception_yn', 'Unit Test', 'meta', 'scenarios', 'inp', 'out', 'exp', 'act'
 
-INP_FIELDS,     OUT_FIELDS,      INP_VALUES,     EXP_VALUES,        ACT_VALUES = \
-'Input Fields', 'Output Fields', 'Input Values', 'Expected Values', 'Actual Values'
+INP_FIELDS,     OUT_FIELDS,      OUT_SCE,    INP_VALUES,     EXP_VALUES,        ACT_VALUES = \
+'Input Fields', 'Output Fields', 'Scenarios', 'Input Values', 'Expected Values', 'Actual Values'
 
 '''*************************************************************************************************
 
@@ -121,8 +121,10 @@ def purely_wrap_unit(inp_groups): # input groups object
     *************************************************************************************************'''
     def purely_wrap_unit_inner(inp_groups_inner): # input groups object (inner level)
         nonlocal sce_inp_ind
-        scenario_inner = sce_inp_lis[sce_inp_ind]
+        scenario_inner, exception_yn = sce_inp_lis[sce_inp_ind].split(DELIM)
         sce_inp_ind += 1
+        if(exception_yn == 'Y'):
+            raise Exception('Exception thrown')
         return groups_obj_from_sgf_triples(scenario_inner, out_group_lis, inp_groups[ACT_VALUES])
 
     '''*************************************************************************************************
@@ -146,14 +148,15 @@ def purely_wrap_unit(inp_groups): # input groups object
         }
         scenarios = {}
         sce_inp_lis = []
-        for s_row in inp_groups['Scenario']:
-            sce, active_yn = s_row.split(DELIM)
+        for s_row in inp_groups['Scenarios']:
+            sce, active_yn, cat_set, exception_yn = s_row.split(DELIM)
             if active_yn == 'Y':
-                sce_inp_lis.append(sce)
+                sce_inp_lis.append(sce + DELIM + exception_yn)
             sce_inp = groups_obj_from_sgf_triples(sce, inp_group_lis, inp_groups[INP_VALUES])
             sce_out = groups_obj_from_sgf_triples(sce, out_group_lis, inp_groups[EXP_VALUES])
             scenarios[sce] = {
                 ACTIVE_YN: active_yn,
+                CAT_SET:   cat_set,
                 INP:       sce_inp,
                 OUT:       sce_out
             }
@@ -178,7 +181,7 @@ def purely_wrap_unit(inp_groups): # input groups object
     
         g_unit_test = [meta[TITLE] + DELIM + meta[DELIMITER]]
     
-        g_inp_fields, g_out_fields, g_inp_values, g_exp_values, g_act_values = [], [], [], [], []
+        g_inp_fields, g_out_fields, g_out_sce, g_inp_values, g_exp_values, g_act_values = [], [], [], [], [], []
         for g in meta[INP]:
             for i in meta[INP][g]:
                 g_inp_fields.append(g + DELIM + i)
@@ -188,6 +191,7 @@ def purely_wrap_unit(inp_groups): # input groups object
                 g_out_fields.append(g + DELIM + i)
     
         for s in scenarios:
+            g_out_sce.append(s + DELIM + scenarios[s][CAT_SET])
             for g in scenarios[s][INP]:
                 for i in scenarios[s][INP][g]:
                     g_inp_values.append(s + DELIM + g + DELIM + i)
@@ -195,7 +199,7 @@ def purely_wrap_unit(inp_groups): # input groups object
                 for i in scenarios[s][OUT][g][EXP]:
                     g_exp_values.append(s + DELIM + g + DELIM + i)
                 for i in scenarios[s][OUT][g][ACT]:
-                    g_act_values.append(s + DELIM + g + DELIM + i)
+                    g_act_values.append(s + DELIM + g + DELIM + re.sub(r'(File ")(.*?)(trapit_python_tester)', r'\1[ROOT FOLDER]\\\3', i))
     
         os.remove(INP_JSON_INNER)
         os.remove(OUT_JSON_INNER)
@@ -203,6 +207,7 @@ def purely_wrap_unit(inp_groups): # input groups object
             UNIT_TEST:  g_unit_test,
             INP_FIELDS: g_inp_fields,
             OUT_FIELDS: g_out_fields,      
+            OUT_SCE:    g_out_sce,      
             INP_VALUES: g_inp_values,     
             EXP_VALUES: g_exp_values,        
             ACT_VALUES: g_act_values
@@ -212,4 +217,4 @@ def purely_wrap_unit(inp_groups): # input groups object
     trapit.test_unit(INP_JSON_INNER, OUT_JSON_INNER, purely_wrap_unit_inner)
     return get_actuals()
 
-trapit.test_unit(INP_JSON, OUT_JSON, purely_wrap_unit)
+trapit.test_format(ROOT, NPM_ROOT, 'trapit_py', purely_wrap_unit)

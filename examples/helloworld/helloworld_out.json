@@ -1,15 +1,20 @@
 {
     "meta": {
-        "title": "Hello World",
+        "title": "Hello World - Python",
         "inp": {},
         "out": {
             "Group": [
                 "Greeting"
+            ],
+            "Unhandled Exception": [
+                "Message",
+                "Stack"
             ]
         }
     },
     "scenarios": {
         "Scenario": {
+            "category_set": "",
             "inp": {},
             "out": {
                 "Group": {
@@ -19,6 +24,10 @@
                     "act": [
                         "Hello World!"
                     ]
+                },
+                "Unhandled Exception": {
+                    "exp": [],
+                    "act": []
                 }
             }
         }

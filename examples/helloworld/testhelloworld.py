@@ -1,32 +1,33 @@
 ﻿'''*************************************************************************************************
 Name: testhelloworld.py                Author: Brendan Furey                       Date: 08-Oct-2022
 
-Code component in the Trapit Python Tester module, which has a utility function for unit testing
-with the Math Function Unit Testing design pattern, and some examples of use.
+Component script in the 'Trapit - Python Unit Testing' module, which facilitates unit testing in
+Oracle PL/SQL following 'The Math Function Unit Testing design pattern', as described here: 
 
-    GitHub: https://github.com/BrenPatF/trapit_python_tester
+    https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html
 
-The design pattern involves the use of JSON files for storing test scenario and metadata, with an
-input file including expected results, and an output file that has the actual results merged in.
+GitHub project for Python:
 
-The unit test driver utility function (trapit.test_unit) is called as effectively the main function
-of any specific unit test script. It reads the input JSON scenarios file, then loops over the
-scenarios making calls to a function passed in as a parameter from the calling script. The function
-acts as a 'pure' wrapper around calls to the unit under test. It is 'externally pure' in the sense
-that it is deterministic, and interacts externally only via parameters and return value. Where the
-unit under test reads inputs from file the wrapper writes them based on its parameters, and where
-the unit under test writes outputs to file the wrapper reads them and passes them out in its return
-value. Any file writing is reverted before exit. 
+    https://github.com/BrenPatF/trapit_python_tester
 
-The utility function comes with a unit test script that uses the utility to test itself; there are
-also two examples, each with main script and unit test script.
+At the heart of the design pattern there is a language-specific unit testing driver function. This
+function reads an input JSON scenarios file, then loops over the scenarios making calls to a
+function passed in as a parameter from the calling script. The passed function acts as a 'pure'
+wrapper around calls to the unit under test. It is 'externally pure' in the sense that it is
+deterministic, and interacts externally only via parameters and return value. Where the unit under
+test reads inputs from file the wrapper writes them based on its parameters, and where the unit
+under test writes outputs to file the wrapper reads them and passes them out in its return value.
+Any file writing is reverted before exit.
 
-Unit testing follows the Math Function Unit Testing design pattern, as described in:
+The driver function accumulates the output scenarios containing both expected and actual results
+in an object, from which a JavaScript function writes the results in HTML and text formats.
 
-    Trapit JavaScript Tester: https://github.com/BrenPatF/trapit_nodejs_tester#trapit
+In testing of non-JavaScript programs, the results object is written to a JSON file to be passed
+to the JavaScript formatter. In Python, the entry-point API, test_format, calls test_unit to write
+the JSON file, then calls the JavaScript formatter, format-external-file.js.
 
-The above JavaScript project includes a utility to format the output JSON files as HTML pages and
-plain text.
+The table shows the driver scripts for the relevant package: There are two examples of use, with
+main and test drivers, and a test driver for the test_unit function.
 ====================================================================================================
 |  Main/Test       |  Unit Module |  Notes                                                         |
 |==================================================================================================|
@@ -53,8 +54,4 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import trapit, helloworld
 
-ROOT = os.path.dirname(__file__) + '/'
-INPUT_JSON = ROOT + 'helloworld.json'
-OUTPUT_JSON = ROOT + 'helloworld_out.json'
-
-trapit.test_unit(INPUT_JSON, OUTPUT_JSON, lambda inp_groups: {'Group': [helloworld.hello_world()]})
+trapit.test_format('./helloworld',  '../powershell_utils/TrapitUtils', 'helloworld', lambda inp_groups: {'Group': [helloworld.hello_world()]})

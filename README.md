@@ -1,16 +1,21 @@
+# Trapit - Python Unit Testing Module
 <img src="png/mountains.png">
 
 > The Math Function Unit Testing design pattern, implemented in Python
 
 :detective:
 
-This module supports a new design pattern for unit testing that can be applied in any language, and is here implemented in Python. The module name is derived from 'TRansactional API Testing' (TRAPIT), and the 'unit' should be considered to be a transactional unit (this is not micro-testing).
+This module supports [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html), a design pattern that can be applied in any language, and is here implemented in Python. The module name is derived from 'TRansactional API Testing' (TRAPIT), and the 'unit' should be considered to be a transactional unit. The pattern avoids microtesting, is data-driven, and fully supports multi-scenario testing and refactoring.
 
-The module supplies a simple utility for unit testing Python programs based on the 'Math Function Unit Testing design pattern'. The utility provides a generic driver program for unit testing, with test data read from an input JSON file, results written to an output JSON file, and all specific test code contained in a callback function passed to the generic driver function. A separate JavaScript module is used to parse the results JSON and format them in HTML and plain text.
+The Python Trapit module provides a generic driver program for unit testing, with test data read from an input JSON file, results written to an output JSON file, and all specific test code contained in a callback function passed to the driver function.
 
-There is a blog post on scenario selection in unit testing that may be of interest:
+Unit test results are formatted by a JavaScript program that takes the JSON output results file as its input, [Trapit - JavaScript Unit Testing/Formatting Utilities Module](https://github.com/BrenPatF/trapit_nodejs_tester), and renders the results in HTML and text formats.
 
-- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
+There is also a PowerShell module, [Trapit - PowerShell Unit Testing Utilities Module](https://github.com/BrenPatF/powershell_utils/tree/master/TrapitUtils), with a utility to generate a template for the JSON input file used by the design pattern, based on simple input CSV files.
+
+This blog post, [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html) provides guidance on effective selection of scenarios for unit testing.
+
+There is an extended Usage section below that illustrates the use of the design pattern for Python unit testing by means of two examples.
 
 # In This README...
 [&darr; Background](#background)<br />
@@ -18,209 +23,541 @@ There is a blog post on scenario selection in unit testing that may be of intere
 [&darr; API](#api)<br />
 [&darr; Installation](#installation)<br />
 [&darr; Unit Testing](#unit-testing)<br />
+[&darr; Folder Structure](#folder-structure)<br />
 [&darr; See Also](#see-also)<br />
-[&darr; License](#license)<br />
 
 ## Background
 [&uarr; In This README...](#in-this-readme)<br />
 
-On March 23, 2018 I made the following presentation at the Oracle User Group conference in Dublin:
+I explained the concepts for the unit testing design pattern in relation specifically to database testing in a presentation at the Oracle User Group Ireland Conference in March 2018:
 
-[Database API Viewed As A Mathematical Function: Insights into Testing](https://www.slideshare.net/brendanfurey7/database-api-viewed-as-a-mathematical-function-insights-into-testing)
+- [The Database API Viewed As A Mathematical Function: Insights into Testing](https://www.slideshare.net/brendanfurey7/database-api-viewed-as-a-mathematical-function-insights-into-testing)
 
-The first section was summarised as:
-<blockquote>Developing a universal design pattern for testing APIs using the concept of a 'pure' function as a wrapper to manage the 'impurity' inherent in database APIs</blockquote>
+I later named the approach [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) when I applied it in Javascript and wrote a JavaScript program to format results both in plain text and as HTML pages:
+- [Trapit - JavaScript Unit Testing/Formatting Utilities Module](https://github.com/BrenPatF/trapit_nodejs_tester)
 
-Although the presentation focussed on database testing the design pattern is clearly quite general.
+The module also allowed for the formatting of results obtained from testing in languages other than JavaScript by means of an intermediate output JSON file. In 2021 I developed a powershell module that included a utility to generate a template for the JSON input scenarios file required by the design pattern:
+- [Trapit - PowerShell Unit Testing Utilities Module](https://github.com/BrenPatF/powershell_utils/tree/master/TrapitUtils)
 
-The main features of the design pattern are:
+Also in 2021 I developed a systematic approach to the selection of unit test scenarios:
+- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
 
-- The unit under test is viewed from the perspective of a mathematical function having an `extended signature`, comprising any actual parameters and return value, together with other inputs and outputs of any kind
-- A wrapper function is constructed based on this conceptual function, and the wrapper function is `externally pure`, while internally handling impurities such as file I/O
-- The wrapper function performs the steps necessary to test the UUT in a single scenario
-- It takes all inputs of the extended signature as a parameter, creates any test data needed from them, effects a transaction with the UUT, and returns all outputs as a return value
-- Any test data, and any data changes made by the UUT, are reverted before return
-- The wrapper function specific to the UUT is called within a loop over scenarios by a library test driver module
-- The library test driver module reads data for all scenarios in JSON format, with both inputs to the UUT and the expected outputs, and metadata records describing the specific data structure
-- The module takes the actual outputs from the wrapper function and merges them in alongside the expected outputs to create an output results object
-- This output results object is processed by a JavaScript module to generate the results formatted as a summary page, with a detail page for each scenario, in both HTML and text versions
-
-At a high level the design pattern:
-
-- takes an input file containing all test scenarios with input data and expected output data for each scenario
-- creates a results object based on the input file, but with actual outputs merged in
-- uses the results object to generate unit test results files formatted in HTML and/or text
-
-<img src="png/Math_Function_UT_DP_-_HL_Flow.png">
-<br />
-
-The Math Function Unit Testing design pattern is centred around the idea of a `pure` wrapper function that maps from `extended` input parameters to an `extended`  return value, with both sides using a generic nested object structure.
-
-<img src="png/Math_Function_UT_DP_-_Mapping.png">
-<br />
-
-Here is a diagram illustrating the concept of the `externally pure` wrapper function:
-<br /><br />
-<img src="png/Math_Function_UT_DP_-_Wrapper.png">
-<br /><br />
-The JavaScript Trapit module supports the full process for testing JavaScript programs, and, for non-JavaScript programs, performs the formatting step by reading in the results object from a JSON file materialized by the external program. 
-
-The current Python project illustrates how this works in unit testing external programs, and there are also examples using Oracle and Powershell.
-<br /><br />
-Advantages of the design pattern include:
-
-- Writing the unit test wrapper function is the only programming required for the specific unit test, with unit test driver, assertion and formatting all centralized in library packages
-- Once the unit test wrapper function is written for one scenario, no further programming is required to handle additional scenarios, facilitating good scenario coverage
-- The formatted results show exactly what the program does in terms of data inputs and outputs
-- All unit test programs can follow a single, straightforward pattern with minimal programming
-- The JavaScript Trapit module can be used to process results files generated from any language as JSON files, as in the current Python project
-
+In early 2023 I extended both the the JavaScript results formatter, and the powershell utility to incorporate Category Set as a scenario attribute. Both utilities support use of the design pattern in any language, while the unit testing driver utility is language-specific and is currently available in Powershell, JavaScript, Python and Oracle PL/SQL versions.
 ## Usage
 [&uarr; In This README...](#in-this-readme)<br />
 [&darr; General Usage](#general-usage)<br />
-[&darr; Example 1 - colgroup](#example-1---colgroup)<br />
-[&darr; Example 2 - hello_world](#example-2---hello_world)<br />
+[&darr; Example 1 - Hello World](#example-1---hello-world)<br />
+[&darr; Example 2 - ColGroup](#example-2---colgroup)<br />
 
-In this section we show how to use the package for unit testing, first in general terms, then via two examples.
+As noted above, the JavaScript module allows for unit testing of JavaScript programs and also the formatting of test results for both JavaScript and non-JavaScript programs. Similarly, the PowerShell module mentioned allows for unit testing of PowerShell programs, and also the generation of the JSON input scenarios file template for testing in any language.
+
+In this section we'll start by describing the steps involved in [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) at an overview level. This will show how the generic PowerShell and JavaScript utilities fit in alongside the language-specific driver utilities.
+
+Then we'll show how to use the design pattern in unit testing Python programs by means of two simple examples.
 
 ### General Usage
 [&uarr; Usage](#usage)<br />
-[&darr; Preliminary Steps](#preliminary-steps)<br />
-[&darr; Unit Testing Process (General)](#unit-testing-process-general)<br />
-[&darr; Unit Test Documentation](#unit-test-documentation)<br />
+[&darr; General Description](#general-description)<br />
+[&darr; Unit Testing Process](#unit-testing-process)<br />
+[&darr; Unit Test Results](#unit-test-results)<br />
 
-#### Preliminary Steps
+At a high level [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) involves three main steps:
+
+1. Create an input file containing all test scenarios with input data and expected output data for each scenario
+2. Create a results object based on the input file, but with actual outputs merged in, based on calls to the unit under test
+3. Use the results object to generate unit test results files formatted in HTML and/or text
+
+<img src="png/HLS.png">
+
+#### General Description
 [&uarr; General Usage](#general-usage)<br />
 
-In order to use the design pattern for unit testing, the following preliminary steps are required: 
-- Create a JSON file containing the input test data including expected return values in the required format. The input JSON file essentially consists of two objects: 
-  - `meta`: inp and out objects each containing group objects with arrays of field names
-  - `scenarios`: scenario objects containing inp and out objects, with inp and out objects containing, for each group defined in meta, an array of input records and an array of expected output records, respectively, records being in delimited fields format
-- Create a unit test script containing the wrapper function and a 1-line main section calling the Trapit library function, passing in the wrapper as a callback function. The wrapper function should call the unit under test passing the appropriate parameters and return its outputs, with the following signature:
+The first and third of these steps are supported by generic utilities that can be used in unit testing in any language. The second step uses a language-specific unit test driver utility.
 
-  - Input parameter: 3-level list with test inputs as an object with groups as properties having 2-level arrays of record/field as values: {GROUP: [[String]], ...}
-                        
-  - Return Value:    2-level list with test outputs as an object with groups as properties having an array of records as delimited fields strings as value: {GROUP: [String], ...}
+For non-JavaScript programs the results object is materialized using a library package in the relevant language. The diagram below shows how the processing from the input JSON file splits into two distinct steps:
+- First, the output results object is created using the external library package which is then written to a JSON file
+- Second, a script from the Trapit JavaScript library package is run, passing in the name of the output results JSON file
 
-This wrapper function may need to write inputs to, and read outputs from, files or tables, but should be `externally pure` in the sense that any changes made are rolled back before returning, including any made by the unit under test, and should be `essentially` deterministic.
+This creates a subfolder with name based on the unit test title within the file, and also outputs a summary of the results. The processing is split between three code units:
+- Test Unit: External library function that drives the unit testing with a callback to a specific wrapper function
+- Specific Test Package: This has a 1-line main program to call the library driver function, passing in the callback wrapper function
+- Unit Under Test (API): Called by the wrapper function, which converts between its specific inputs and outputs and the generic version used by the library package
 
-The diagram shows the flows between input and output files:
+<img src="png/PFD-Ext.png">
 
-- Input JSON file (yellow)
-- Output JSON file (yellow)
-- Formatted unit test reports (blue)
+In the first step the external program creates the output results JSON file, while in the second step the file is read into an object by the Trapit library package, which then formats the results.
 
-and the four code components, where the design pattern centralizes as much code as possible in the library packages:
-
-- JavaScript Trapit library package for formatting results (dark green)
-- External (Python) library package for unit testing (light green)
-- Specific (Python) test package (tan)
-- Unit under test (Python) (rose)
-
-<img src="png/Math_Function_UT_DP_-_External.png">
-
-#### Unit Testing Process (General)
+#### Unit Testing Process
 [&uarr; General Usage](#general-usage)<br />
+[&darr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file)<br />
+[&darr; Step 2: Create Results Object](#step-2-create-results-object)<br />
+[&darr; Step 3: Format Results](#step-3-format-results)<br />
 
-Once the preliminary steps are executed, the script (testuut.py, say) can be executed as follows:
+This section details the three steps involved in following [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html).
+
+##### Step 1: Create Input Scenarios File
+[&uarr; Unit Testing Process](#unit-testing-process)<br />
+[&darr; Unit Test Wrapper Function](#unit-test-wrapper-function)<br />
+[&darr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan)<br />
+[&darr; Creating the Input Scenarios File](#creating-the-input-scenarios-file)<br />
+
+Step 1 requires analysis to determine the extended signature for the unit under test, and to determine appropriate scenarios to test.
+
+It may be useful during the analysis phase to create two diagrams, one for the extended signature:
+- JSON Structure Diagram: showing the groups with their fields for input and output
+
+and another for the category sets and categories:
+- Category Structure Diagram: showing the category sets identified with their categories
+
+You can see examples of these diagrams later in this document: [JSON Structure Diagram](#unit-test-wrapper-function-2) and [Category Structure Diagram](#scenario-category-analysis-scan-2), and schematic versions in the next two subsections.
+
+###### Unit Test Wrapper Function
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file)<br />
+
+Here is a schematic version of a JSON structure diagram, which in a real instance will  in general have multiple input and output groups, each with multiple fields:
+
+<img src="png/JSD-Example.png">
+
+Each group in the diagram corresponds to a property within the inp_groups input object or out_groups return value object of the wrapper function, and contains an array of the group records stored as delimited strings.
 
 ```py
-$ py [path]/testuut.py
+def purely_wrap_unit(inp_groups): # input groups object
+    ...
+    return out_groups
+}
 ```
 
-The output results files are processed by a JavaScript program that has to be installed separately, as described in the [Installation](#installation) section. The JavaScript program produces listings of the results in HTML and/or text format in a subfolder named from the unit test title. 
+###### Scenario Category ANalysis (SCAN)
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file)<br />
 
-To run the processor, go to the npm trapit package folder after placing the output JSON files, trapit_py_out.json, in a new (or existing) folder, python, within the subfolder externals and run:
+The art of unit testing lies in choosing a set of scenarios that will produce a high degree of confidence in the functioning of the unit under test across the often very large range of possible inputs.
 
+A useful approach can be to think in terms of categories of inputs, where we reduce large ranges to representative categories, an idea I explore in this article:
+
+- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
+
+Here is a schematic version of a category set diagram, which in a real instance will  in general have multiple category sets, each with multiple categories:
+
+<img src="png/CSD-Example.png">
+
+Each category i-j in the diagram corresponds to a scenario j for category set i.
+
+###### Creating the Input Scenarios File
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file)<br />
+
+The results of the analysis can be summarised in three CSV files which  a PowerShell program uses as inputs to create a template for the JSON file.
+
+The PowerShell API, `Write-UT_Template` creates a template for the JSON file, with the full meta section, and a set of template scenarios having name as scenario key, a category set attribute, and zero or more records with default values for each input and output group. The API takes as inputs three CSV files:
+  - `stem`\_inp.csv: list of group, field, values tuples for input
+  - `stem`\_out.csv: list of group, field, values tuples for output
+  - `stem`\_sce.csv: scenario triplets - (Category set, scenario name, active flag); this file is optional
+
+In the case where a scenarios file is present, each group has zero or more records with field values taken from the group CSV files, with a record for each value column present where at least one value is not null for the group. The template scenario represents a kind of prototype scenario, where records may be manually updated (and added or subtracted) to reflect input and expected output values for the actual scenario being tested.
+
+The API can be run with the following PowerShell in the folder of the CSV files:
+
+###### Format-JSON-Stem.ps1
+```powershell
+Import-Module TrapitUtils
+Write-UT_Template 'stem' '|' 'title'
 ```
-$ node externals/format-externals python
+This creates the template JSON file, `stem`\_temp.json based on the CSV files having prefix `stem` and using the field delimiter '|', and including the unit test title passed. The PowerShell API can be used for testing in any language.
+
+The template file is then updated manually with data appropriate to each scenario.
+
+##### Step 2: Create Results Object
+[&uarr; Unit Testing Process](#unit-testing-process)<br />
+
+Step 2 requires the writing of a wrapper function that is passed into a unit test library function, test_unit, via the entry point API,  `test_format`. test_unit reads the input JSON file, calls the wrapper function for each scenario, and writes the output JSON file with the actual results merged in along with the expected results.
+
+##### purely_wrap_unit
+```py
+def purely_wrap_unit(inp_groups): # input groups object
+    ...
+    return out_groups
+}
 ```
 
-This outputs to screen the following summary level report (for both examples described below), as well as writing the formatted results files to the subfolders indicated:
-```
-Unit Test Results Summary for Folder ./externals/python
-=======================================================
- File                 Title        Inp Groups  Out Groups  Tests  Fails  Folder     
---------------------  -----------  ----------  ----------  -----  -----  -----------
-*colgroup_out.json    Col Group             3           4      5      1  col-group  
- helloworld_out.json  Hello World           0           1      1      0  hello-world
+The test driver API,  `test_format`, is language-specific, and this one is for testing Python programs. Equivalents exist under the same GitHub account (BrenPatF) for JavaScript, PowerShell and Oracle PL/SQL at present.
 
-1 externals failed, see ./externals/python for scenario listings
-colgroup_out.json
+##### Step 3: Format Results
+[&uarr; Unit Testing Process](#unit-testing-process)<br />
+
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
+
+- `test_format` is the function from the trapit Python package that calls the main test driver function that contains the wrapper function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results. It takes as parameters:
+
+    - `ut_root`: unit test root folder
+    - `npm_root`: parent folder of the JavaScript node_modules npm root folder
+    - `stem_inp_json`: input JSON file name stem
+    - `purely_wrap_unit`: function to process unit test for a single scenario
+
+    with return value:
+
+    - summary of results
+
+##### teststem.py
+```powershell
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+import trapit
+ROOT = os.path.dirname(__file__)
+DELIM = '|'
+NPM_ROOT = ROOT + '/../../powershell_utils/TrapitUtils'
+def purely_wrap_unit(inp_groups): # input groups object
+    ...
+    return {
+        ...
+    }
+trapit.test_format(ROOT, NPM_ROOT, 'stem', purely_wrap_unit)
 ```
 
-The running of the python unit test, and its Javascript formatting can easily be automated, as in the following Powershell script in the examples folder:
-```ps
-$ ./Run-Examples.ps1
-```
-This example script runs both example unit tests and then the Javascript formatter, assuming a hard-coded npm root folder, and writes the summary to a file python.log.
-
-#### Unit Test Documentation
+#### Unit Test Results
 [&uarr; General Usage](#general-usage)<br />
+[&darr; Unit Test Report - Scenario List](#unit-test-report---scenario-list)<br />
+[&darr; Unit Test Report - Scenario Pages](#unit-test-report---scenario-pages)<br />
 
-In documenting our unit testing it may be helpful to divide into four sections: The unit testing process; wrapper function design and code; scenario category analysis; unit test results. The heading structure might look as follows:
+The script above creates a results subfolder, with results in text and HTML formats, in the script folder, and outputs a summary of the following form:
 
-- Unit Testing Process
-- Unit Test Wrapper Function
-  - Wrapper Function Signature Diagram
-  - Input JSON File
-  - Wrapper Function Code
-- Scenario Category ANalysis (SCAN)
-  - Simple Category Sets
-  - Composite Category Sets
-  - Scenario Category Mapping
-- Unit Test Results
-  - Results Summary
-  - Unit Test Report: Title
+```
+Results summary for file: [MY_PATH]/stem_out.json
+=================================================
 
-### Example 1 - colgroup
+File:          stem_out.json
+Title:         [Title]
+Inp Groups:    [#Inp Groups]
+Out Groups:    [#Out Groups]
+Tests:         [#Tests]
+Fails:         [#Fails]
+Folder:        [Folder]
+```
+
+Within the results subfolder there is a text file containing a list of summary results at scenario level, followed by the detailed results for each scenario. In addition there are files providing the results in HTML format.
+
+##### Unit Test Report - Scenario List
+[&uarr; Unit Test Results](#unit-test-results)<br />
+
+The scenario list page lists, for each scenario:
+
+- \# - the scenario index
+- Category Set - the category set applying to the scenario
+- Scenario - a description of the scenario
+- Fails (of N) - the number of groups failing, with N being the total number of groups
+- Status - SUCCESS or FAIL
+
+The scenario field is a hyperlink to the individual scenario page.
+
+##### Unit Test Report - Scenario Pages
+[&uarr; Unit Test Results](#unit-test-results)<br />
+
+The page for each scenario has the following schematic structure:
+```
+SCENARIO i: Scenario [Category Set: (category set)]
+  INPUTS
+    For each input group: [Group name] - a heading line followed by a list of records
+      For each field: Field name
+      For each record: 1 line per record, with record number followed by:
+        For each field: Field value for record
+  OUTPUTS
+    For each output group: [Group name] - a heading line followed by a list of records
+      For each field: Field name
+      For each record: 1 line per record, with record number followed by:
+        For each field: Field expected value for record
+        For each field: Field actual value for record (only if any actual differs from expected)
+    Group status - #fails of #records: SUCCESS / FAIL
+Scenario status - #fails of #groups: SUCCESS / FAIL
+```
+### Example 1 - Hello World
 [&uarr; Usage](#usage)<br />
-[&darr; Unit Testing Process - colgroup](#unit-testing-process---colgroup)<br />
-[&darr; Unit Test Wrapper Function - colgroup](#unit-test-wrapper-function---colgroup)<br />
-[&darr; Scenario Category ANalysis (SCAN) - colgroup](#scenario-category-analysis-scan---colgroup)<br />
-[&darr; Unit Test Results - colgroup](#unit-test-results---colgroup)<br />
+[&darr; Example Description](#example-description)<br />
+[&darr; Unit Testing Process](#unit-testing-process-1)<br />
+[&darr; Unit Test Results](#unit-test-results-1)<br />
 
-This example is a python class with a constructor function that reads in a CSV file and counts instances of distinct values in a given column. The constructor function appends a timestamp and call details to a log file. The class has methods to list the value/count pairs in several orderings. 
+The first example is a version of the 'Hello World' program traditionally used as a starting point in learning a new programming language. This is useful as it shows the core structures involved in following the design pattern with a minimalist unit under test.
 
-There is a main script that shows how the class might be called outside of unit testing, run from the module root folder:
+#### Example Description
+[&uarr; Example 1 - Hello World](#example-1---hello-world)<br />
+
+This is a pure function form of Hello World program, returning a value rather than writing to screen itself. It is of course trivial, but has some interest as an edge case with no inputs and extremely simple JSON input structure and test code.
+
+##### helloworld\.py
 ```py
-$ py examples/colgroup/maincolgroup.py
+def hello_world():
+    return 'Hello World!'
+```
+There is a main script that shows how the function might be called outside of unit testing:
+
+##### mainhelloworld\.py
+```py
+import helloworld as hw
+print(hw.hello_world())
+```
+
+This can be called from a command window in the examples folder:
+```py
+$ py helloworld/mainhelloworld.py
+```
+
+with output to console:
+```
+Hello World!
+```
+#### Unit Testing Process
+[&uarr; Example 1 - Hello World](#example-1---hello-world)<br />
+[&darr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-1)<br />
+[&darr; Step 2: Create Results Object](#step-2-create-results-object-1)<br />
+[&darr; Step 3: Format Results](#step-3-format-results-1)<br />
+
+##### Step 1: Create Input Scenarios File
+[&uarr; Unit Testing Process](#unit-testing-process-1)<br />
+[&darr; Unit Test Wrapper Function](#unit-test-wrapper-function-1)<br />
+[&darr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan-1)<br />
+[&darr; Creating the Input Scenarios File](#creating-the-input-scenarios-file-1)<br />
+
+###### Unit Test Wrapper Function
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-1)<br />
+
+Here is a diagram of the input and output groups for this example:
+
+<img src="png/JSD-HW.png">
+
+From the input and output groups depicted we can construct CSV files with flattened group/field structures, and default values added, as follows (with `helloworld_inp.csv` left, `helloworld_out.csv` right):
+<img src="png/groups - helloworld.png">
+
+###### Scenario Category ANalysis (SCAN)
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-1)<br />
+
+The Category Structure diagram for the Hello World example is of course trivial:
+
+<img src="png/CSD-HW.png">
+
+It has just one scenario, with its input being void:
+
+|  # | Category Set | Category | Scenario |
+|---:|:-------------|:---------|:---------|
+|  1 | Global       | No input | No input |
+
+From the scenarios identified we can construct the following CSV file (`helloworld_sce.csv`), taking the category set and scenario columns, and adding an initial value for the active flag:
+
+<img src="png/scenarios - helloworld.png">
+
+###### Creating the Input Scenarios File
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-1)<br />
+
+The PowerShell API to generate a template JSON file can be run with the following PowerShell script in the folder of the CSV files:
+
+###### Format-JSON-HelloWorld.ps1
+```powershell
+Import-Module ..\..\powershell_utils\TrapitUtils\TrapitUtils
+Write-UT_Template 'helloworld_py' '|' 'Hello World - Python'
+```
+This creates the template JSON file, helloworld_temp.json, which contains an element for each of the scenarios, with the appropriate category set and active flag. In this case there is a single scenario, with empty input, and a single record in the output group with the default value from the output groups CSV file. Here is the complete file:
+
+##### helloworld_temp.json
+```js
+{
+  "meta": {
+    "title": "Hello World - Python",
+    "delimiter": "|",
+    "inp": {},
+    "out": {
+      "Group": [
+        "Greeting"
+      ]
+    }
+  },
+  "scenarios": {
+    "No input": {
+      "active_yn": "Y",
+      "category_set": "Global",
+      "inp": {},
+      "out": {
+        "Group": [
+          "Hello World!"
+        ]
+      }
+    }
+  }
+}
+```
+
+##### Step 2: Create Results Object
+[&uarr; Unit Testing Process](#unit-testing-process-1)<br />
+
+Step 2 requires the writing of a wrapper function that is passed into a unit test library function, test_unit, via the entry point API,  `test_format`. test_unit reads the input JSON file, calls the wrapper function for each scenario, and writes the output JSON file with the actual results merged in along with the expected results.
+
+Here we use a lambda expression as the wrapper function is so simple:
+
+###### Wrapper Function - Lambda Expression
+```python
+lambda inp_groups: {'Group': [helloworld.hello_world()]}
+```
+
+This lambda expression is included in the script testhelloworld.py and passed as a parameter to test_format.
+
+##### Step 3: Format Results
+[&uarr; Unit Testing Process](#unit-testing-process-1)<br />
+
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
+
+- `test_format` is the function from the trapit package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
+
+###### testhelloworld.py
+```python
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+import trapit, helloworld
+
+trapit.test_format('./helloworld',  '../powershell_utils/TrapitUtils', 'helloworld', lambda inp_groups: {'Group': [helloworld.hello_world()]})
+```
+This script contains the wrapper function (here a lambda expression), passing it in a call to the trapit library function test_format.
+
+#### Unit Test Results
+[&uarr; Example 1 - Hello World](#example-1---hello-world)<br />
+[&darr; Unit Test Report - Hello World](#unit-test-report---hello-world)<br />
+[&darr; Scenario 1: No input](#scenario-1-no-input)<br />
+
+The unit test script creates a results subfolder, with results in text and HTML formats, in the script folder, and outputs the following summary:
+
+```
+Results summary for file: [MY_PATH]/trapit_python_tester/examples/helloworld/helloworld_out.json
+================================================================================================
+
+File:          helloworld_out.json
+Title:         Hello World - Python
+Inp Groups:    0
+Out Groups:    2
+Tests:         1
+Fails:         0
+Folder:        hello-world---python
+```
+
+##### Unit Test Report - Hello World
+[&uarr; Unit Test Results](#unit-test-results-1)<br />
+
+Here we show the scenario-level summary of results for this example, and also show the detail for the only scenario.
+
+You can review the HTML formatted unit test results here:
+
+- [Unit Test Report: Hello World](http://htmlpreview.github.io/?https://github.com/BrenPatF/powershell_utils/blob/master/TrapitUtils/examples/helloworld/hello-world---powershell/hello-world---powershell.html)
+
+
+This is the summary page in text format.
+
+```
+Unit Test Report: Hello World - Python
+======================================
+
+      #    Scenario  Fails (of 2)  Status
+      ---  --------  ------------  -------
+      1    Scenario  0             SUCCESS
+
+Test scenarios: 0 failed of 1: SUCCESS
+======================================
+Formatted: 7/6/2025, 11:01:46
+```
+
+##### Scenario 1: No input
+[&uarr; Unit Test Results](#unit-test-results-1)<br />
+
+This is the scenario page in text format, with only one scenario.
+
+```
+SCENARIO 1: No input [Category Set: Global] {
+=============================================
+   INPUTS
+   ======
+   OUTPUTS
+   =======
+      GROUP 1: Group {
+      ================
+            #  Greeting
+            -  ------------
+            1  Hello World!
+      } 0 failed of 1: SUCCESS
+      ========================
+      GROUP 2: Unhandled Exception: Empty as expected: SUCCESS
+      ========================================================
+} 0 failed of 2: SUCCESS
+========================
+```
+Note that the second output group, 'Unhandled Exception', is not specified in the CSV file: In fact, this is generated by the test_unit API itself in order to capture any unhandled exception.
+### Example 2 - ColGroup
+[&uarr; Usage](#usage)<br />
+[&darr; Example Description](#example-description-1)<br />
+[&darr; Unit Testing Process](#unit-testing-process-2)<br />
+[&darr; Unit Test Results](#unit-test-results-2)<br />
+
+The second example, 'ColGroup', is larger and intended to show a wider range of features, but without too much extraneous detail.
+
+#### Example Description
+[&uarr; Example 2 - ColGroup](#example-2---colgroup)<br />
+
+This example involves a class with a constructor function that reads in a CSV file and counts instances of distinct values in a given column. The constructor function appends a timestamp and call details to a log file. The class has methods to list the value/count pairs in several orderings.
+
+##### colgroup\.py (skeleton)
+```python
+import sys, os
+from datetime import datetime
+from utils_cg import *
+...
+class ColGroup {
+    ...
+}
+```
+
+There is a main script that shows how the class might be called outside of unit testing:
+
+##### maincolgroup.py
+```python
+import sys, os
+import colgroup as cg
+
+ROOT = os.path.dirname(__file__) + '/'
+(input_file, delim, col) = ROOT + 'fantasy_premier_league_player_stats.csv', ',', 6
+
+grp = cg.ColGroup(input_file, delim, col)
+grp.pr_list('(as is)', grp.list_as_is())
+grp.pr_list('key', grp.sort_by_key())
+grp.pr_list('value (lambda)', grp.sort_by_value_lambda())
+```
+This can be called from a command window in the examples folder:
+
+```python
+$ py colgroup/maincolgroup.py
 ```
 with output to console:
+
 ```
 Counts sorted by (as is)
 ========================
 Team         #apps
 -----------  -----
-team_name_2      1
-team_name_1      1
 West Brom     1219
 Swansea       1180
 Blackburn       33
-Bolton          37
-Chelsea       1147
+...
+
+Counts sorted by key
+====================
+Team         #apps
+-----------  -----
 Arsenal        534
-Everton       1147
-Tottenham     1288
-Fulham        1209
-QPR           1517
-Liverpool     1227
-Sunderland    1162
-Man City      1099
-Man Utd       1231
-Newcastle     1247
-Stoke City    1170
-Wolves          31
 Aston Villa    685
-Wigan         1036
-Norwich       1229
-West Ham      1126
-Reading       1167
+Blackburn       33
+...
+Counts sorted by value
+======================
+Team         #apps
+-----------  -----
+Wolves          31
+Blackburn       33
+Bolton          37
 ...
 ```
 and to log file, fantasy_premier_league_player_stats.csv.log:
 ```
-Sun Sep 23 2018 13:29:07: File ./examples/colgroup/fantasy_premier_league_player_stats.csv, delimiter ',', column 6
+2023-04-10 08:02:43: File [MY_PATH]/trapit_python_tester/examples/colgroup/fantasy_premier_league_player_stats.csv, delimiter ',', column team_name
 ```
 
 The example illustrates how a wrapper function can handle `impure` features of the unit under test:
@@ -231,153 +568,174 @@ The example illustrates how a wrapper function can handle `impure` features of t
 - By using regex matching for strings including timestamps
 - By using number range matching and converting timestamps to epochal offsets (number of units of time since a fixed time)
 
-#### Unit Testing Process - colgroup
-[&uarr; Example 1 - colgroup](#example-1---colgroup)<br />
+#### Unit Testing Process
+[&uarr; Example 2 - ColGroup](#example-2---colgroup)<br />
+[&darr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-2)<br />
+[&darr; Step 2: Create Results Object](#step-2-create-results-object-2)<br />
+[&darr; Step 3: Format Results](#step-3-format-results-2)<br />
 
-To run the unit test program from the module root folder:
+##### Step 1: Create Input Scenarios File
+[&uarr; Unit Testing Process](#unit-testing-process-2)<br />
+[&darr; Unit Test Wrapper Function](#unit-test-wrapper-function-2)<br />
+[&darr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan-2)<br />
+[&darr; Creating the Input Scenarios File](#creating-the-input-scenarios-file-2)<br />
 
-```py
-$ py examples/colgroup/testcolgroup.py
-```
+###### Unit Test Wrapper Function
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-2)<br />
 
-The output result file is processed by a JavaScript program as explained in the `General Usage` section above. It outputs to screen a summary level report (for both examples), as well as writing the listings of the results in HTML and/or text format in a subfolder named from the unit test title, as specified in the input JSON file.
+Here is a diagram of the input and output groups for this example:
 
-The section `Unit Testing Process (General)`, above, shows how to combine the running of the python script and the JavaScript formatter in a single powershell script.
+<img src="png/JSD-CG.png">
 
-#### Unit Test Wrapper Function - colgroup
-[&uarr; Example 1 - colgroup](#example-1---colgroup)<br />
-[&darr; WF Signature Diagram - colgroup](#wf-signature-diagram---colgroup)<br />
-[&darr; Input JSON File - colgroup](#input-json-file---colgroup)<br />
-[&darr; Wrapper Function Code - colgroup](#wrapper-function-code---colgroup)<br />
+From the input and output groups depicted we can construct CSV files with flattened group/field structures, and default values added, as follows (with `colgrp_inp.csv` left, `colgrp_out.csv` right):
+<img src="png/groups - colgroup.png">
 
-##### WF Signature Diagram - colgroup
-[&uarr; Unit Test Wrapper Function - colgroup](#unit-test-wrapper-function---colgroup)<br />
+The value fields shown correspond to a prototype scenario with records per group:
 
-The JSON input file contains `meta` and `scenarios` properties, as mentioned above, with structure reflecting the (extended) inputs and outputs of the unit under test. I like to make a diagram of the input and output groups, which for this example is:
+- Input
+    - Log: 0
+    - Scalars: 1
+    - Lines: 4
+- Output
+    - Log: 1
+    - Scalars: 1
+    - listAsIs: 1
+    - sortByKey: 2
+    - sortByValue: 2
 
-<img src="png/Math_Function_UT_DP_-_JSD-CG.png">
+A PowerShell utility uses these CSV files, together with one for scenarios, discussed next, to generate a template for the JSON unit testing input file. The utility creates a prototype scenario dataset with a record in each group for each populated value column, that is used for each scenario in the template.
 
-##### Input JSON File - colgroup
-[&uarr; Unit Test Wrapper Function - colgroup](#unit-test-wrapper-function---colgroup)<br />
+###### Scenario Category ANalysis (SCAN)
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-2)<br />
 
-An easy way to generate a starting point for the input JSON file is to use a powershell utility [Powershell Utilites module](https://github.com/BrenPatF/powershell_utils) to generate a template file with a single scenario with placeholder records from simple CSV files. The CSV files, `colgroup_inp.csv`, containing input group, field pairs, and the second, `colgroup_out.csv`, the same for output for the JSON structure diagram above would look like this:
+As noted earlier, a useful approach to scenario selection can be to think in terms of categories of inputs, where we reduce large ranges to representative categories.
 
-<img src="png/Input_CSV_Files_colGroup.png">
+###### Generic Category Sets - ColGroup
 
-The powershell utility can be run from a powershell window like this:
+As explained in the article mentioned earlier, it can be very useful to think in terms of generic category sets that apply in many situations. Multiplicity is relevant here (as it often is):
 
+###### Multiplicity
+
+There are several entities where the generic category set of multiplicity applies, and we should check each of the None / One / Multiple instance categories.
+
+| Code     | Description     |
+|:--------:|:----------------|
+| None     | No values       |
+| One      | One value       |
+| Multiple | Multiple values |
+
+Apply to:
+<ul>
+<li>Lines</li>
+<li>File Columns (one or multiple only)</li>
+<li>Key Instance (one or multiple only)</li>
+<li>Delimiter (one or multiple only)</li>
+</ul>
+
+###### Categories and Scenarios - ColGroup
+
+After analysis of the possible scenarios in terms of categories and category sets, we can depict them on a Category Structure diagram:
+
+<img src="png/CSD-CG.png">
+
+We can tabulate the results of the category analysis, and assign a scenario against each category set/category with a unique description:
+
+|  # | Category Set              | Category            | Scenario                                 |
+|---:|:--------------------------|:--------------------|:-----------------------------------------|
+|  1 | Lines Multiplicity        | None                | No lines                                 |
+|  2 | Lines Multiplicity        | One                 | One line                                 |
+|  3 | Lines Multiplicity        | Multiple            | Multiple lines                           |
+|  4 | File Column Multiplicity  | One                 | One column in file                       |
+|  5 | File Column Multiplicity  | Multiple            | Multiple columns in file                 |
+|  6 | Key Instance Multiplicity | One                 | One key instance                         |
+|  7 | Key Instance Multiplicity | Multiple            | Multiple key instances                   |
+|  8 | Delimiter Multiplicity    | One                 | One delimiter character                  |
+|  9 | Delimiter Multiplicity    | Multiple            | Multiple delimiter characters            |
+| 10 | Key Size                  | Short               | Short key                                |
+| 11 | Key Size                  | Long                | Long key                                 |
+| 12 | Log file existence        | No                  | Log file does not exist at time of call  |
+| 13 | Log file existence        | Yes                 | Log file exists at time of call          |
+| 14 | Key/Value Ordering        | No                  | Order by key differs from order by value |
+| 15 | Key/Value Ordering        | Yes                 | Order by key same as order by value      |
+| 16 | Errors                    | Mismatch            | Actual/expected mismatch                 |
+| 17 | Errors                    | Unhandled Exception | Unhandled Exception                      |
+
+From the scenarios identified we can construct the following CSV file (`colgrp_sce.csv`), taking the category set and scenario columns, and adding an initial value for the active flag:
+
+<img src="png/scenarios - colgroup.png">
+
+###### Creating the Input Scenarios File
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-2)<br />
+
+The API to generate a template JSON file can be run with the following PowerShell in the folder of the CSV files:
+
+###### Format-JSON-ColGroup.ps1
 ```powershell
-Import-Module TrapitUtils
-Write-UT_Template 'colgroup' '|'
+Import-Module ..\..\powershell_utils\TrapitUtils\TrapitUtils
+Write-UT_Template 'colgroup_py' '|' 'ColGroup - Python'
 ```
+This creates the template JSON file, colgroup_temp.json, which contains an element for each of the scenarios, with the appropriate category set and active flag, with a single record in each group with default values from the groups CSV files. Here is the "Multiple lines" element:
 
-This generates a JSON template file, colgroup_temp.json.
-
-The template is then updated with test data for 5 scenarios (showing just the first one here):
-
-```json
-{ "meta": {
-    "title": "Col Group",
-    "inp": {
-        "Log": [
-            "Line"
-        ],
+    "Multiple lines": {
+      "active_yn": "Y",
+      "category_set": "Lines Multiplicity",
+      "inp": {
+        "Log": [],
         "Scalars": [
-            "Delimiter",
-            "Column#"
+          ",|1|"
         ],
         "Lines": [
-            "Line"
+          "col_0,col_1,col_2",
+          "val_01,val_11,val_21",
+          "val_02,val_12,val_22",
+          "val_03,val_11,val_23"
         ]
-    },
-    "out": {
+      },
+      "out": {
         "Log": [
-            "#Lines",
-            "Date Offset",
-            "Text"
+          "1|IN [0,2000]|LIKE /.*: File .*ut_group.*.csv, delimiter ',', column 1/"
         ],
         "listAsIs": [
-            "#Instances"
+          "2"
         ],
         "sortByKey": [
-            "Key",
-            "Value"
+          "val_11|2",
+          "val_12|1"
         ],
         "sortByValue": [
-            "Key",
-            "Value"
+          "val_12|1",
+          "val_11|2"
         ]
-    }
-},
-"scenarios" : { 
-   "Col 1/3; 2 duplicate lines; double-delimiter; 1-line log": 
-   {
-    "active_yn" : "Y",
-    "inp": {
-       "Log": [
-       ],
-       "Scalars": [
-            ",|2"
-        ],
-        "Lines": [
-            "0,1,Cc,3",
-            "00,1,A,9",
-            "000,1,B,27",
-            "0000,1,A,81"
-        ]
+      }
     },
-    "out": {
-        "Log": [
-            "1|IN [0, 2000]|LIKE /.*: File ./examples/colgroup/ut_group.csv, delimiter ',', column 2/"
-        ],
-        "listAsIs": [
-            "3"
-        ],
-        "sortByKey": [
-            "A|2",
-            "Bx|1",
-            "Cc|1"
-        ],
-        "sortByValue": [
-            "B|1",
-            "Cc|1",
-            "A|2"
-        ]
-    }
-},
-...3 more scenarios
-}}
-```
 
-Notice the syntax for the expected values for the second and third fields in the 3-field output record for the log group. This specifies matching against a numeric range and a regular expression, respectively, as follows:
+For each scenario element, we need to update the values to reflect the scenario to be tested, in the actual input JSON file, colgroup.json. In the "Multiple lines" scenario above the prototype scenario data can be used as is, but in others it would need to be updated.
 
-- Date Offset: "IN [0, 2000]" - the datetime offset in microseconds must be between 0 and 2000 microseconds from the datetime at the start of execution
-- Text: "LIKE /.\*: File ./examples/colgroup/ut_group.csv, delimiter ',', column 2/" - the line of text written must match the regular expression betwen the '/' delimiters, allowing us to ignore the precise timestamp for testing purposes, but still to display it for information
+##### Step 2: Create Results Object
+[&uarr; Unit Testing Process](#unit-testing-process-2)<br />
 
+Step 2 requires the writing of a wrapper function that is passed into a unit test library function, test_unit, via the entry point API,  `test_format`. test_unit reads the input JSON file, calls the wrapper function for each scenario, and writes the output JSON file with the actual results merged in along with the expected results.
 
-##### Wrapper Function Code - colgroup
-[&uarr; Unit Test Wrapper Function - colgroup](#unit-test-wrapper-function---colgroup)<br />
-
-The text box below shows the entire specific unit test code for this example (short isn't it? &#128513;) containing the pure wrapper function, purely_wrap_unit, and the one line main section calling the library function, trapit.test_unit.
-
-```py
+###### purely_wrap_unit
+```python
 import sys, os
 from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import trapit, colgroup as cg
 
-ROOT = os.path.dirname(__file__) + '/'
+ROOT = os.path.dirname(__file__) + '\\'
 DELIM = '|'
 INPUT_JSON,             OUTPUT_JSON,                INPUT_FILE,            LOG_FILE                  = \
 ROOT + 'colgroup.json', ROOT + 'colgroup_out.json', ROOT + 'ut_group.csv', ROOT + 'ut_group.csv.log'
 GRP_LOG,   GRP_SCA,   GRP_LIN, GRP_LAI,    GRP_SBK,     GRP_SBV       = \
 'Log',     'Scalars', 'Lines', 'listAsIs', 'sortByKey', 'sortByValue'
 
-def from_CSV(csv, col):
+def from_CSV(csv,  # string of delimited values
+             col): # 0-based column index
     return csv.split(DELIM)[col]
-def join_tuple(t):
+def join_tuple(t): # 2-tuple
     return t[0] + DELIM + str(t[1])
-def setup(inp):
+def setup(inp): # input groups object
     with open(INPUT_FILE, 'w') as infile:
         infile.write('\n'.join(inp[GRP_LIN]))
     if (len(inp[GRP_LOG]) > 0):
@@ -388,7 +746,9 @@ def teardown():
     os.remove(INPUT_FILE)
     os.remove(LOG_FILE)
 
-def purely_wrap_unit(inp_groups):
+def purely_wrap_unit(inp_groups): # input groups object
+    if (from_CSV(inp_groups[GRP_SCA][0], 2) == 'Y'):
+        raise Exception('Error thrown')
     col_group   = setup(inp_groups)
     with open(LOG_FILE, 'r') as logfile:
         logstr = logfile.read()
@@ -399,428 +759,169 @@ def purely_wrap_unit(inp_groups):
     logDate    = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
     now        = datetime.now()
     diffDate   = (now - logDate).microseconds / 1000
-
     teardown()
     return {
-        GRP_LOG : [str((len(lines_array) - 1)) + DELIM + str(diffDate) + DELIM + text],
+        GRP_LOG : [str((len(lines_array) - 1)) + DELIM + str(diffDate) + DELIM + text.replace("\\", "-")],
         GRP_LAI : [str(len(col_group.list_as_is()))],
         GRP_SBK : list(map(join_tuple, col_group.sort_by_key())),
         GRP_SBV : list(map(join_tuple, col_group.sort_by_value_lambda()))
     }
-trapit.test_unit(INPUT_JSON, OUTPUT_JSON, purely_wrap_unit)
 ```
 
-#### Scenario Category ANalysis (SCAN) - colgroup
-[&uarr; Example 1 - colgroup](#example-1---colgroup)<br />
-[&darr; Simple Category Sets - colgroup](#simple-category-sets---colgroup)<br />
-[&darr; Composite Category Sets - colgroup](#composite-category-sets---colgroup)<br />
-[&darr; Scenario Category Mapping - colgroup](#scenario-category-mapping---colgroup)<br />
+##### Step 3: Format Results
+[&uarr; Unit Testing Process](#unit-testing-process-2)<br />
 
-This article, [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html), explains how to derive unit test scenarios using a new approach called the SCAN method.
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter:
+- `test_format` is the function from the trapit Python package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
 
-Following the method, in this section we identify the category sets for the problem, and tabulate the corresponding categories. We need to consider which category sets can be tested independently of each other, and which need to be considered in combination. We can then obtain a set of scenarios to cover all relevant combinations of categories.
+###### testcolgroup.py (skeleton)
 
-##### Simple Category Sets - colgroup
-[&uarr; Scenario Category ANalysis (SCAN) - colgroup](#scenario-category-analysis-scan---colgroup)<br />
-
-###### MUL-LIN - Multiplicity of lines
-
-Check works correctly with 0, 1 and multiple lines.
-
-| Code | Description |
-|:----:|:------------|
-|   0  | None        |
-|   1  | One         |
-|   m  | Multiple    |
-
-###### POS-KEY - Position of key column
-
-Check works correctly when the key column is first, last or in the middle.
-
-| Code | Description |
-|:----:|:------------|
-|   F  | First       |
-|   L  | Last        |
-|   M  | Middle      |
-
-###### MUL-KEY - Multiplicity of key instances
-
-Check works correctly with 1 and multiple key instances.
-
-| Code | Description |
-|:----:|:------------|
-|   1  | One         |
-|   m  | Multiple    |
-
-###### MUL-COL - Multiplicity of file columns
-
-Check works correctly with 1 and multiple columns in file.
-
-| Code | Description |
-|:----:|:------------|
-|   1  | One         |
-|   m  | Multiple    |
-
-###### MUL-DEL - Multiplicity of delimiter character
-
-Check works correctly with 1 and multiple delimiter character.
-
-| Code | Description |
-|:----:|:------------|
-|   1  | One         |
-|   m  | Multiple    |
-
-###### SIZ - Size of key
-
-Check works correctly with short and long key values.
-
-| Code | Description |
-|:----:|:------------|
-|   S  | Short       |
-|   L  | Long        |
-
-###### LOG  - Log file existence
-
-Check works correctly when there is already a log file and when there isn't.
-
-| Code | Description                              |
-|:----:|:-----------------------------------------|
-|   N  | No - file does not exist at time of call |
-|   Y  | No - file exists at time of call         |
-
-###### ORD-SAM  - Ordering same by key and by value?
-
-Check ordering methods work when order of output records same by key and value and when differs.
-
-| Code | Description                              |
-|:----:|:-----------------------------------------|
-|   N  | Order by key differs from order by value |
-|   Y  | Order by key same as order by value      |
-
-##### Composite Category Sets - colgroup
-[&uarr; Scenario Category ANalysis (SCAN) - colgroup](#scenario-category-analysis-scan---colgroup)<br />
-
-In this section we need to consider which simple category sets need to be considered in combination with others. In fact, in this case, all the category sets other than `Multiplicity of lines` are independent of each other, and have a very simple dependence on `Multiplicity of lines`: There has to be at least one line in the file to test the other category sets, and multiple lines to test a couple of them. 
-
-As `Position of key column` has three categories, we can test these with multiple lines, as well as testing the zero-lines edge case and the 1-line case. The possible combinations of these two category sets can then be the basis for our scenarios, and we can just enumerate the other categories within them.
-
-###### MUL-LK - Multiplicity of lines and key instances
-
-Check works correctly with 0, 1 and multiple lines, and for multiple lines all three categories of `Position of key column`.
-
-| MUL-LIN | POS-KEY | Description                         |
-|:-------:|:-------:|:------------------------------------|
-|    0    |    -    | Lines: None; Key column: NA         |
-|    1    |    F    | Lines: 1; Key column: First         |
-|    m    |    F    | Lines: Multiple; Key column: First  |
-|    m    |    L    | Lines: Multiple; Key column: Last   |
-|    m    |    M    | Lines: Multiple; Key column: Middle |
-
-##### Scenario Category Mapping - colgroup
-[&uarr; Scenario Category ANalysis (SCAN) - colgroup](#scenario-category-analysis-scan---colgroup)<br />
-
-We now want to construct a set of scenarios based on the category sets identified, covering each individual category, and also covering combinations of categories that may interact. As discussed in the previous section, the possible combinations of the first two category sets form the basis for the category-level scenario set, with the remaining category sets enumerated in the additional columns.
-
-| # | MUL-LIN | POS-KEY | MUL-KEY | MUL-COL | MUL-DEL | SIZ | LOG | ORD-SAM | Description                         |
-|:--|:-------:|:-------:|:-------:|:-------:|:-------:|:---:|:---:|:-------:|:------------------------------------|
-| 1 |    0    |    -    |    -    |    -    |    -    |  -  |  -  |    -    | Lines: None; Key column: NA         |
-| 2 |    1    |    F    |    1    |    1    |    1    |  S  |  N  |    -    | Lines: 1; Key column: First         |
-| 3 |    m    |    F    |    m    |    m    |    m    |  L  |  Y  |    N    | Lines: Multiple; Key column: First  |
-| 4 |    m    |    L    |    m    |    m    |    m    |  L  |  Y  |    Y    | Lines: Multiple; Key column: Last   |
-| 5 |    m    |    M    |    m    |    m    |    m    |  L  |  Y  |    N    | Lines: Multiple; Key column: Middle |
-  
-#### Unit Test Results - colgroup
-[&uarr; Example 1 - colgroup](#example-1---colgroup)<br />
-[&darr; Results Summary - colgroup](#results-summary---colgroup)<br />
-[&darr; Unit Test Report: Col Group](#unit-test-report-col-group)<br />
-
-##### Results Summary - colgroup
-[&uarr; Unit Test Results - colgroup](#unit-test-results---colgroup)<br />
-
-The results summary from the JavaScript test formatter was (for both examples):
-```
-Unit Test Results Summary for Folder ./externals/python
-=======================================================
- File                 Title        Inp Groups  Out Groups  Tests  Fails  Folder     
---------------------  -----------  ----------  ----------  -----  -----  -----------
-*colgroup_out.json    Col Group             3           4      5      1  col-group  
- helloworld_out.json  Hello World           0           1      1      0  hello-world
-
-1 externals failed, see ./externals/python for scenario listings
-colgroup_out.json
-```
-
-You can review the HTML formatted unit test results for the program here:
-
-- [Unit Test Report: Col Group](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/examples/colgroup/col-group/col-group.html)
-
-The formatted results files, both text and HTML, are available in the `col-group` subfolder. The summary report showing scenarios tested, in text format, along with the detailed report for scenario 5, are copied below:
-
-##### Unit Test Report: Col Group
-[&uarr; Unit Test Results - colgroup](#unit-test-results---colgroup)<br />
-```
-Unit Test Report: Col Group
-===========================
-
-      #    Scenario                             Fails (of 4)  Status 
-      ---  -----------------------------------  ------------  -------
-      1    Lines: None; Key column: NA          0             SUCCESS
-      2    Lines: 1; Key column: First          0             SUCCESS
-      3    Lines: Multiple; Key column: First   0             SUCCESS
-      4    Lines: Multiple; Key column: Last    0             SUCCESS
-      5*   Lines: Multiple; Key column: Middle  1             FAILURE
-
-Test scenarios: 1 failed of 5: FAILURE
-======================================
-```
-Note the record #5 above marked with a '\*' indicating failure status. The detailed report for the fifth scenario, in text format, is copied below:
-```
-SCENARIO 5: Lines: Multiple; Key column: Middle {
-=================================================
-   INPUTS
-   ======
-      GROUP 1: Log {
-      ==============
-            #  Line      
-            -  ----------
-            1  Log line 1
-      }
-      =
-      GROUP 2: Scalars {
-      ==================
-            #  Delimiter  Column#
-            -  ---------  -------
-            1  ;;         5      
-      }
-      =
-      GROUP 3: Lines {
-      ================
-            #  Line                                                                         
-            -  -----------------------------------------------------------------------------
-            1  0;;1;;2;;3;;4;;12345678901234567890123456789012345678901234567890;;5;;6;;7;;8
-            2  0;;1;;2;;3;;4;;abc;;5;;6;;7;;8                                               
-            3  0;;1;;2;;3;;4;;12345678901234567890123456789012345678901234567890;;5;;6;;7;;8
-      }
-      =
-   OUTPUTS
-   =======
-      GROUP 1: Log {
-      ==============
-            #  #Lines  Date Offset           Text                                                                                                                                                                                                           
-            -  ------  --------------------  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-            1  2       IN [0,2000]: 480.149  LIKE /.*: File .*examples-colgroup-ut_group.csv, delimiter ';;', column 5/: 2021-11-20 16:14:04: File C:-Users-Brend-OneDrive-Script-pip-trapit-trapit-examples-colgroup-ut_group.csv, delimiter ';;', column 5
-      } 0 failed of 1: SUCCESS
-      ========================
-      GROUP 2: listAsIs {
-      ===================
-            #   #Instances
-            --  ----------
-            1   3         
-            1*  2         
-      } 1 failed of 1: FAILURE
-      ========================
-      GROUP 3: sortByKey {
-      ====================
-            #  Key                                                 Value
-            -  --------------------------------------------------  -----
-            1  12345678901234567890123456789012345678901234567890  2    
-            2  abc                                                 1    
-      } 0 failed of 2: SUCCESS
-      ========================
-      GROUP 4: sortByValue {
-      ======================
-            #  Key                                                 Value
-            -  --------------------------------------------------  -----
-            1  abc                                                 1    
-            2  12345678901234567890123456789012345678901234567890  2    
-      } 0 failed of 2: SUCCESS
-      ========================
-} 1 failed of 4: FAILURE
-========================
-```
-
-Note the record #1 above marked with a '\*' in 'GROUP 2: listAsIs', indicating a mismatch between expected and actual values. This is a deliberate error to illustrate the format when mismatches occur. Where the actual value differs from expected the actual record is listed below the expected, with the '\*' marker against the record number, and in the HTML report the record is coloured red. In fact the value '2' is correct and the expected value has been incorrectly set to '3'.
-
-### Example 2 - hello_world
-[&uarr; Usage](#usage)<br />
-[&darr; Unit Testing Process - helloworld](#unit-testing-process---helloworld)<br />
-[&darr; Unit Test Wrapper Function - helloworld](#unit-test-wrapper-function---helloworld)<br />
-[&darr; Scenario Category ANalysis (SCAN) - helloworld](#scenario-category-analysis-scan---helloworld)<br />
-[&darr; Unit Test Results - helloworld](#unit-test-results---helloworld)<br />
-
-```py
-def hello_world():
-    return 'Hello World!'
-```
-This is a pure function form of Hello World program, returning a value rather than writing to screen itself. It is of course trivial, but has some interest as an edge case with no inputs and extremely simple JSON input structure and test code.
-
-There is a main script that shows how the function might be called outside of unit testing, run from the module root folder:
-```py
-$ py examples/helloworld/mainhelloworld.py
-```
-with output to console:
-```
-Hello World!
-```
-#### Unit Testing Process - helloworld
-[&uarr; Example 2 - hello_world](#example-2---hello_world)<br />
-
-To run the unit test program from the module root folder:
-
-```py
-$ py examples/helloworld/testhelloworld.py
-```
-
-The output result file is processed by a JavaScript program as explained in the `General Usage` section above. It outputs to screen a summary level report (for both examples), as well as writing the listings of the results in HTML and/or text format in a subfolder named from the unit test title, as specified in the input JSON file.
-
-The section `Unit Testing Process (General)`, above, shows how to combine the running of the python script and the JavaScript formatter in a single powershell script.
-
-#### Unit Test Wrapper Function - helloworld
-[&uarr; Example 2 - hello_world](#example-2---hello_world)<br />
-[&darr; WF Signature Diagram - helloworld](#wf-signature-diagram---helloworld)<br />
-[&darr; Input JSON File - helloworld](#input-json-file---helloworld)<br />
-[&darr; Wrapper Function Code - helloworld](#wrapper-function-code---helloworld)<br />
-
-##### WF Signature Diagram - helloworld
-[&uarr; Unit Test Wrapper Function - helloworld](#unit-test-wrapper-function---helloworld)<br />
-
-The JSON structure diagram for this trivial example is:
-
-<img src="png/Math_Function_UT_DP_-_JSD-HW.png">
-
-##### Input JSON File - helloworld
-[&uarr; Unit Test Wrapper Function - helloworld](#unit-test-wrapper-function---helloworld)<br />
-
-The input JSON file, showing empty input property in the meta and scenarios objects, is:
-
-[&uarr; Input JSON File](#input-json-file-1)
-
-```json
-{ "meta": {
-    "title": "Hello World",
-    "inp": {},
-    "out": {
-        "Group": [
-            "Greeting"
-        ]
-    }
-},
-"scenarios" : { 
-   "Scenario": 
-   {
-    "inp": {},
-    "out": {
-        "Group": [
-            "Hello World!"
-        ]
-    }
-}
-}}
-```
-
-##### Wrapper Function Code - helloworld
-[&uarr; Unit Test Wrapper Function - helloworld](#unit-test-wrapper-function---helloworld)<br />
-
-The text box below shows the entire specific unit test code for this example. In this trivial case, we can pass the pure wrapper function as a lambda expression.
-
-```py
+```python
 import sys, os
+from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-import trapit, helloworld
+import trapit, colgroup as cg
+ROOT = os.path.dirname(__file__)
+DELIM = '|'
+INPUT_FILE,            LOG_FILE,                    NPM_ROOT = \
+ROOT + '/ut_group.csv', ROOT + '/ut_group.csv.log', ROOT + '/../../powershell_utils/TrapitUtils'
+...
+def purely_wrap_unit(inp_groups): # input groups object
+    ...
+    return {
+        ...
+    }
+trapit.test_format(ROOT, NPM_ROOT, 'colgroup', purely_wrap_unit)
+```
+This script contains the wrapper function, passing it in a call to the trapit library function test_format.
 
-ROOT = os.path.dirname(__file__) + '/'
-INPUT_JSON = ROOT + 'helloworld.json'
-OUTPUT_JSON = ROOT + 'helloworld_out.json'
+#### Unit Test Results
+[&uarr; Example 2 - ColGroup](#example-2---colgroup)<br />
+[&darr; Unit Test Report - ColGroup](#unit-test-report---colgroup)<br />
 
-trapit.test_unit(INPUT_JSON, OUTPUT_JSON, lambda  inp_groups: {'Group': [helloworld.hello_world()]})
+The unit test script creates a results subfolder, with results in text and HTML formats, in the script folder, and outputs the following summary:
+```
+Results summary for file: [MY_PATH]/trapit_python_tester/examples/colgroup/colgroup_out.json
+============================================================================================
+
+File:          colgroup_out.json
+Title:         ColGroup - Python
+Inp Groups:    3
+Out Groups:    5
+Tests:         17
+Fails:         2
+Folder:        colgroup---python
 ```
 
-#### Scenario Category ANalysis (SCAN) - helloworld
-[&uarr; Example 2 - hello_world](#example-2---hello_world)<br />
+##### Unit Test Report - ColGroup
+[&uarr; Unit Test Results](#unit-test-results-2)<br />
+[&darr; Scenario 16: Actual/expected mismatch [Category Set: Errors]](#scenario-16-actualexpected-mismatch-category-set-errors)<br />
 
-With no input data, the set of input data category sets is of course empty 🙂.
+Here we show the scenario-level summary of results for the specific example, and show the detail for one of the failing scenarios.
 
-#### Unit Test Results - helloworld
-[&uarr; Example 2 - hello_world](#example-2---hello_world)<br />
-[&darr; Results Summary - helloworld](#results-summary---helloworld)<br />
-[&darr; Unit Test Report: Hello World](#unit-test-report-hello-world)<br />
+You can review the HTML formatted unit test results here:
 
-##### Results Summary - helloworld
-[&uarr; Unit Test Results - helloworld](#unit-test-results---helloworld)<br />
+- [Unit Test Report: ColGroup](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/examples/colgroup/colgroup---python/colgroup---python.html)
 
-The results summary from the JavaScript test formatter was (for both examples):
-```
 
-Unit Test Results Summary for Folder ./externals/python
-=======================================================
- File                 Title        Inp Groups  Out Groups  Tests  Fails  Folder     
---------------------  -----------  ----------  ----------  -----  -----  -----------
-*colgroup_out.json    Col Group             3           4      5      1  col-group  
- helloworld_out.json  Hello World           0           1      1      0  hello-world
+This is a screenshot of the summary page in HTML format.
+<img src="png/summary-colgroup.png">
 
-1 externals failed, see ./externals/python for scenario listings
-colgroup_out.json
-```
+###### Scenario 16: Actual/expected mismatch [Category Set: Errors]
+[&uarr; Unit Test Report - ColGroup](#unit-test-report---colgroup)<br />
 
-You can review the HTML formatted unit test results for the program here:
-
-- [Unit Test Report: Hello World](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/examples/helloworld/hello-world/hello-world.html)
-
-The formatted results files, both text and HTML, are available in the `hello-world` subfolder. Here is the full set of results in text format:
-
-##### Unit Test Report: Hello World
-[&uarr; Unit Test Results - helloworld](#unit-test-results---helloworld)<br />
-
-```
-Unit Test Report: Hello World
-=============================
-      #    Scenario  Fails (of 1)  Status 
-      ---  --------  ------------  -------
-      1    Scenario  0             SUCCESS
-Test scenarios: 0 failed of 1: SUCCESS
-======================================
-SCENARIO 1: Scenario {
-======================
-   INPUTS
-   ======
-   OUTPUTS
-   =======
-      GROUP 1: Group {
-      ================
-            #  Greeting    
-            -  ------------
-            1  Hello World!
-      } 0 failed of 1: SUCCESS
-      ========================
-} 0 failed of 1: SUCCESS
-========================
-```
-
+This scenario is designed to fail, with one of the expected values in group 4 set to 9999 instead of the correct value of 2,  just to show how mismatches are displayed.
+<img src="png/scenario_16-colgroup.png">
 ## API
 [&uarr; In This README...](#in-this-readme)<br />
-[&darr; trapit.test_unit(inp_file, out_file, purely_wrap_unit)](#trapittest_unitinp_file-out_file-purely_wrap_unit)<br />
+[&darr; test_unit](#test_unit)<br />
+[&darr; test_format](#test_format)<br />
 
 ```py
 import trapit
 ```
 
-### trapit.test_unit(inp_file, out_file, purely_wrap_unit)
+### test_unit
 [&uarr; API](#api)<br />
+```
+trapit.test_unit(inp_file, out_file, purely_wrap_unit)
+```
+Unit tests a unit using [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) with input data read from a JSON file, and output results written to an output JSON file, with parameters:
 
-The unit test driver utility function is called as effectively the main function of any specific unit test script. It reads the input JSON scenarios file, then loops over the scenarios making calls to a function passed in as a parameter from the calling script. The function acts as a `pure` wrapper around calls to the unit under test. It is `externally pure` in the sense that it is deterministic, and interacts externally only via parameters and return value. Where the unit under test reads inputs from file the wrapper writes them based on its parameters, and where the unit under test writes outputs to file the wrapper reads them and passes them out in its return value. Any file writing is reverted before exit. 
+- `inp_file`: JSON input file, with input and expected output data
+- `out_file`: JSON output file, with input, expected and actual output data
+- `purely_wrap_unit`: function to process unit test for a single scenario, passed in from test script, described below
+
+#### purely_wrap_unit
+```python
+purely_wrap_unit(inp_groups)
+```
+Processes unit test for a single scenario, taking inputs as an object with input group data, making calls to the unit under test, and returning the actual outputs as an object with output group data, with parameters:
+
+* object containing input groups with group name as key and list of delimited input records as value, of form:
+<pre>
+    {
+        inp_group1: [rec1, rec2,...],
+        inp_group2: [rec1, rec2,...],
+        ...
+    }
+</pre>
+Return value:
+
+* object containing output groups with group name as key and list of delimited actual output records as value, of form:
+<pre>
+    {
+        out_group1: [rec1, rec2,...],
+        out_group2: [rec1, rec2,...],
+        ...
+    }
+</pre>
+
+This function acts as a 'pure' wrapper around calls to the unit under test. It is 'externally pure' in the sense that it is deterministic, and interacts externally only via parameters and return value. Where the unit under test reads inputs from file the wrapper writes them based on its parameters, and where the unit under test writes outputs to file the wrapper reads them and passes them out in its return value. Any file writing is reverted before exit.
+
+test_unit is normally called via the test_format function, but is called directly in unit testing.
+
+### test_format
+[&uarr; API](#api)<br />
+```
+trapit.test_format(ut_root, npm_root, stem_inp_json, purely_wrap_unit)
+```
+
+The unit test driver utility function is called as effectively the main function of any specific unit test script. It calls test_unit, then calls the JavaScript formatter, which writes the formatted results files to a subfolder in the script folder, based on the title, returning a summary. It has parameters:
 
 It has the following parameters:
 
-- `inp_file`: JSON input file name
-- `out_file`: JSON output file name
-- `purely_wrap_unit`: wrapper function, which calls the unit under test passing the appropriate parameters and returning its outputs, with the following signature:
-  - inp_groups: input groups object, a 3-level list with test inputs as an object with groups as properties having 2-level arrays of record/field as values: {GROUP: [[String]], ...}
-  - Return Value: output groups object, a 2-level list with test outputs as an object with groups as properties having an array of records as delimited fields strings as value: {GROUP: [String], ...}
+- `ut_root`: unit test root folder
+- `npm_root`: parent folder of the JavaScript node_modules npm root folder
+- `stem_inp_json`: input JSON file name stem
+- `purely_wrap_unit`: function to process unit test for a single scenario, passed in from test script, described in the section above for test_unit
 
+Return value:
+
+- summary of results
 ## Installation
 [&uarr; In This README...](#in-this-readme)<br />
+[&darr; Prerequisite Applications](#prerequisite-applications)<br />
 [&darr; Python Installation - pip](#python-installation---pip)<br />
-[&darr; Javascript Installation - npm](#javascript-installation---npm)<br />
+
+### Prerequisite Applications
+[&uarr; Installation](#installation)<br />
+[&darr; Node.js](#nodejs)<br />
+[&darr; Powershell](#powershell)<br />
+
+#### Node.js
+[&uarr; Prerequisite Applications](#prerequisite-applications)<br />
+
+The unit test results are formatted using a JavaScript program, which is included as part of the current project. Running the program requires the Node.js application:
+
+- [Node.js Downloads](https://nodejs.org/en/download)
+
+#### Powershell
+[&uarr; Prerequisite Applications](#prerequisite-applications)<br />
+
+Powershell is optional, and is used in the project for generating a template for the JSON input file required by [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html):
+
+- [Installing Windows PowerShell](https://learn.microsoft.com/en-us/powershell/scripting/windows-powershell/install/installing-windows-powershell)
 
 ### Python Installation - pip
 [&uarr; Installation](#installation)<br />
@@ -828,164 +929,216 @@ It has the following parameters:
 With [python](https://www.python.org/downloads/windows/) installed, run in a powershell or command window:
 
 ```py
-$ py -m pip install trapit 
+$ py -m pip install trapit
 ```
-
-### Javascript Installation - npm
-[&uarr; Installation](#installation)<br />
-
-- [Trapit JavaScript Tester/Formatter - GitHub module](https://github.com/BrenPatF/trapit_nodejs_tester)
-
-With [npm](https://npmjs.org/) installed, run from your npm installation folder:
-
-```js
-$ npm install trapit 
-```
-
 ## Unit Testing
 [&uarr; In This README...](#in-this-readme)<br />
-[&darr; Unit Testing Process](#unit-testing-process)<br />
-[&darr; Wrapper Function](#wrapper-function)<br />
-[&darr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan)<br />
-[&darr; Unit Test Results](#unit-test-results)<br />
+[&darr; Unit Testing Process](#unit-testing-process-3)<br />
+[&darr; Unit Test Results](#unit-test-results-3)<br />
 
-In this section the unit testing API function trapit.test_unit is itself tested using the Math Function Unit Testing design pattern.
+In this section the unit testing API function trapit.test_unit is itself tested using [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html). A 'pure' wrapper function is constructed that takes input parameters and returns a value, and is tested within a loop over scenario records read from a JSON file.
 
 ### Unit Testing Process
 [&uarr; Unit Testing](#unit-testing)<br />
+[&darr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-3)<br />
+[&darr; Step 2: Create Results Object](#step-2-create-results-object-3)<br />
+[&darr; Step 3: Format Results](#step-3-format-results-3)<br />
 
-The unit test utility can be used to test itself following the same 'Math Function Unit Testing design pattern' that it facilitates for testing of general programs. The challenge in this case is in determining a suitable signature and specification for the wrapper function that has to represent unit testing of any program.
+This section details the three steps involved in following [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html).
 
-Unit testing is data-driven from the input file trapit_py.json and produces an output results file, trapit_py_out.json. This contains arrays of expected and actual records by group and scenario. 
+#### Step 1: Create Input Scenarios File
+[&uarr; Unit Testing Process](#unit-testing-process-3)<br />
+[&darr; Unit Test Wrapper Function](#unit-test-wrapper-function-3)<br />
+[&darr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan-3)<br />
+[&darr; Creating the Input Scenarios File](#creating-the-input-scenarios-file-3)<br />
 
-To run the unit test program from the module root folder:
+##### Unit Test Wrapper Function
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-3)<br />
 
-```py
-$ py unit_test/testtrapit.py
-```
-
-The output result file is processed by a JavaScript program as explained in the `General Usage` section above. It outputs to screen a summary level report (including for both of the earlier examples), as well as writing the listings of the results in HTML and/or text format in a subfolder named from the unit test title, as specified in the input JSON file.
-
-To run the processor, go to the npm trapit package folder after placing the output JSON files, trapit_py_out.json, in a new (or existing) folder, python, within the subfolder externals and run:
-
-```js
-$ node externals/format-externals python
-```
-This outputs to screen the following summary level report, as well as writing the formatted results files to the subfolders indicated:
-```
-Unit Test Results Summary for Folder ./externals/python
-=======================================================
- File                 Title               Inp Groups  Out Groups  Tests  Fails  Folder            
---------------------  ------------------  ----------  ----------  -----  -----  ------------------
-*colgroup_out.json    Col Group                    3           4      5      1  col-group         
- helloworld_out.json  Hello World                  0           1      1      0  hello-world       
- trapit_py_out.json   Python Unit Tester           7           6      3      0  python-unit-tester
-
-1 externals failed, see ./externals/python for scenario listings
-colgroup_out.json
-```
-
-The running of the python unit test, and its Javascript formatting can easily be automated, as in the following Powershell script in the unit_test folder:
-```ps
-$ ./Run-Ut.ps1
-```
-This script runs the unit test and then the Javascript formatter, assuming a hard-coded npm root folder, and writes the summary to a file, python.log.
-
-### Wrapper Function
-[&uarr; Unit Testing](#unit-testing)<br />
-[&darr; Wrapper Function Signature Diagram](#wrapper-function-signature-diagram)<br />
-[&darr; Input JSON File](#input-json-file)<br />
-[&darr; Wrapper Function Code](#wrapper-function-code)<br />
-
-The signature of the unit under test is: 
-
-    trapit.test_unit(inp_file, out_file, purely_wrap_unit)
-
-The parameters are input and output file names, and a function. The `extended` inputs and outputs required for the wrapper function include the contents of the input and output files.
-
-#### Wrapper Function Signature Diagram
-[&uarr; Wrapper Function](#wrapper-function)<br />
-
-<img src="png/JSD_Python_test_unit_Screen.png">
-
-As noted above, the inputs to the unit under test here include a function. This raises the interesting question as to how we can model a function in our test data. In fact the best way to do this seems to be to regard the function as a kind of black box, where we don't care about the interior of the function, but only its behaviour in terms of returning an output from an input. This is why we have the `Actual Values` group in the input side of the diagram above, as as well as on the output side. We can model any deterministic function in our test data simply by specifying input and output sets of values.
-
-As we are using the trapit.test_unit API to test itself, we will have inner and outer levels for the calls and their parameters. The inner-level wrapper function passed in in the call to the unit under test by the outer-level wrapper function therefore needs simply to return the set of `Actual Values` records for the given scenario. In order for it to know which set to return, the scenarios need to be within readable scope, and we need to know which scenario to use. This is achieved by maintaining arrays containing a list of inner scenarios and a list of inner output groups, along with a nonlocal variable with an index to the current inner scenario that the inner wrapper increments each time it's called. This allows the output array to be extracted from the input parameter from the outer wrapper function.
-
-#### Input JSON File
-[&uarr; Wrapper Function](#wrapper-function)<br />
-
-An easy way to generate a starting point for the input JSON file is to use a powershell utility [Powershell Utilites module](https://github.com/BrenPatF/powershell_utils) to generate a template file with a single scenario with placeholder records from simple CSV files (see the script test_unit.ps1 in the `test` subfolder). The CSV files, `test_unit_inp.csv`, containing input group, field pairs, and the second, `test_unit_out.csv`, the same for output for the JSON structure diagram above would look like this:
-
-<img src="png/Input_CSV_Files_Trapit.png">
-
-The powershell utility can be run from a powershell window like this:
+The signature of the unit under test is:
 
 ```powershell
-Import-Module TrapitUtils
-Write-UT_Template 'test_unit' '|'
+test_unit(inp_file, out_file, purely_wrap_unit)
+```
+where the parameters are described in the API section above. The diagram below shows the structure of the input and output of the wrapper function.
+
+<img src="png/JSD-test_unit.png">
+
+As noted above, the inputs to the unit under test here include a function. This raises the interesting question as to how we can model a function in our test data. In fact the best way to do this seems to be to regard the function as a kind of black box, where we don't care about the interior of the function, but only its behaviour in terms of returning an output from an input. This is why we have the Actual Values group in the input side of the diagram above, as well as on the output side. We can model any deterministic function in our test data simply by specifying input and output sets of values.
+
+As we are using the trapit.test_unit API to test itself, we will have inner and outer levels for the calls and their parameters. The inner-level wrapper function passed in in the call to the unit under test by the outer-level wrapper function therefore needs simply to return the set of Actual Values records for the given scenario. In order for it to know which set to return, the scenarios need to be within readable scope, and we need to know which scenario to use. This is achieved by maintaining arrays containing a list of inner scenarios and a list of inner output groups, along with a nonlocal variable with an index to the current inner scenario that the inner wrapper increments each time it's called. This allows the output array to be extracted from the input parameter from the outer wrapper function.
+
+From the input and output groups depicted we can construct CSV files with flattened group/field structures, and default values added, as follows:
+
+###### trapit_py_inp.csv
+<img src="png/trapit_py_inp.png">
+
+The value fields shown correspond to a prototype scenario with records per input group:
+- Unit Test: 1
+- Input Fields: 4
+- Output Fields: 4
+- Scenarios: 2
+- Input Values: 4
+- Expected Values: 4
+- Actual Values: 4
+
+###### trapit_py_out.csv
+<img src="png/trapit_py_out.png">
+
+The value fields shown correspond to a prototype scenario with records per output group:
+- Unit Test: 1
+- Input Fields: 4
+- Output Fields: 6
+- Scenarios: 2
+- Input Values: 4
+- Expected Values: 4
+- Actual Values: 4
+
+A PowerShell utility uses these CSV files, together with one for scenarios, discussed next, to generate a template for the JSON unit testing input file. The utility creates a prototype scenario dataset with a record in each group for each populated value column, that is used for each scenario in the template.
+
+##### Scenario Category ANalysis (SCAN)
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-3)<br />
+[&darr; Generic Category Sets](#generic-category-sets)<br />
+[&darr; Categories and Scenarios](#categories-and-scenarios)<br />
+
+The art of unit testing lies in choosing a set of scenarios that will produce a high degree of confidence in the functioning of the unit under test across the often very large range of possible inputs.
+
+A useful approach can be to think in terms of categories of inputs, where we reduce large ranges to representative categories, an idea I explore in this article:
+
+- [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
+
+###### Generic Category Sets
+[&uarr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan-3)<br />
+
+As explained in the article mentioned above, it can be very useful to think in terms of generic category sets that apply in many situations. Multiplicity is relevant here (as it often is):
+
+###### *Multiplicity*
+
+There are several entities where the generic category set of multiplicity applies, and we should check each of the applicable None / One / Multiple instance categories.
+
+| Code     | Description     |
+|:--------:|:----------------|
+| None     | No values       |
+| One      | One value       |
+| Multiple | Multiple values |
+
+Apply to:
+<ul>
+<li>Input Groups</li>
+<li>Output Groups</li>
+<li>Input Fields (one or multiple only)</li>
+<li>Output Fields (one or multiple only)</li>
+<li>Input Records</li>
+<li>Output Records</li>
+<li>Delimiter Characters (one or multiple characters only)</li>
+<li>Scenarios (one or multiple only)</li>
+</ul>
+
+###### Categories and Scenarios
+[&uarr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan-3)<br />
+
+After analysis of the possible scenarios in terms of categories and category sets, we can depict them on a Category Structure diagram:
+
+<img src="png/CSD-test_unit.png">
+
+We can tabulate the results of the category analysis, and assign a scenario against each category set/category with a unique description:
+
+|  # | Category Set               | Category        | Scenario                                                 |
+|---:|:---------------------------|:----------------|:-----------------------------------------------------    |
+|  1 | Input Group Multiplicity   | None            | No input groups                                          |
+|  2 | Input Group Multiplicity   | One             | One input group                                          |
+|  3 | Input Group Multiplicity   | Multiple        | Multiple input groups                                    |
+|  4 | Output Group Multiplicity  | None            | No output groups                                         |
+|  5 | Output Group Multiplicity  | One             | One output group                                         |
+|  6 | Output Group Multiplicity  | Multiple        | Multiple output groups                                   |
+|  7 | Input Field Multiplicity   | One             | One input group field                                    |
+|  8 | Input Field Multiplicity   | Multiple        | Multiple input fields                                    |
+|  9 | Output Field Multiplicity  | One             | One output group field                                   |
+| 10 | Output Field Multiplicity  | Multiple        | Multiple output fields                                   |
+| 11 | Input Record Multiplicity  | None            | No input group records                                   |
+| 12 | Input Record Multiplicity  | One             | One input group record                                   |
+| 13 | Input Record Multiplicity  | Multiple        | Multiple input group records                             |
+| 14 | Output Record Multiplicity | None            | No output group records                                  |
+| 15 | Output Record Multiplicity | One             | One output group record                                  |
+| 16 | Output Record Multiplicity | Multiple        | Multiple output group records                            |
+| 17 | Scenario Multiplicity      | One             | One scenario                                             |
+| 18 | Scenario Multiplicity      | Multiple        | Multiple scenarios                                       |
+| 19 | Scenario Multiplicity      | Active/Inactive | Active and inactive scenarios                            |
+| 21 | Category Set               | Null            | Category sets null                                       |
+| 21 | Category Set               | Same            | Multiple category sets with the same value               |
+| 22 | Category Set               | Different       | Multiple category sets with null and not null values     |
+| 23 | Delimiter Characters       | Delimiter 1     | Delimiter example 1                                      |
+| 24 | Delimiter Characters       | Delimiter 2     | Delimiter example 2                                      |
+| 25 | Delimiter Characters       | Multiple        | Multicharacter delimiter                                 |
+| 26 | Invalidity Type            | Valid           | All records the same                                     |
+| 27 | Invalidity Type            | Values mismatch | Same record numbers, value difference                    |
+| 28 | Invalidity Type            | #Exp > #Act     | More expected than actual records                        |
+| 29 | Invalidity Type            | #Exp < #Act     | More actual than expected records set                    |
+| 30 | Unhandled Exception        | Yes             | Unhandled exception                                      |
+|  * | Unhandled Exception        | No              | (No unhandled exception)*                                |
+|  * | Test Status                | Pass            | (All scenarios pass)*                                    |
+| 31 | Test Status                | Fail            | At least one scenario fails                              |
+
+From the scenarios identified we can construct the following CSV file, taking the category set and scenario columns, and adding an initial value for the active flag:
+
+###### trapit_py_sce.csv
+<img src="png/trapit_py_sce.png">
+
+##### Creating the Input Scenarios File
+[&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-3)<br />
+
+The API to generate a template JSON file can be run with the following PowerShell in the folder of the CSV files:
+
+###### Format-JSON-TrapitPy
+
+```powershell
+Import-Module ..\powershell_utils\TrapitUtils\TrapitUtils.psm1
+Write-UT_Template 'trapit_py' '|' 'Trapit Python Tester'
 ```
 
-This generates a JSON template file, test_unit_temp.json. The template is then updated with test data for the four scenarios identified in the `Scenario Category Analysis` section.
+This creates the template JSON file, trapit_py_temp.json, which contains an element for each of the scenarios, with the appropriate category set and active flag, and a prototype set of input and output records.
 
-#### Wrapper Function Code
-[&uarr; Wrapper Function](#wrapper-function)<br />
-[&darr; testtrapit.py](#testtrapitpy)<br />
-[&darr; purely_wrap_unit](#purely_wrap_unit)<br />
-[&darr; write_input_json](#write_input_json)<br />
-[&darr; get_actuals](#get_actuals)<br />
-[&darr; Small functions](#small-functions)<br />
+In the prototype record sets, each group has zero or more records with field values taken from the group CSV files, with a record for each value column present where at least one value is not null for the group. The template scenario records may be manually updated (and added or subtracted) to reflect input and expected output values for the actual scenario being tested.
 
-The wrapper function has the structure shown in the diagram below, being defined in a driver script followed by a single line calling the test_unit API.
+#### Step 2: Create Results Object
+[&uarr; Unit Testing Process](#unit-testing-process-3)<br />
+
+Step 2 requires the writing of a wrapper function that is passed into a unit test library function, test_unit, via the entry point API,  `test_format`. test_unit reads the input JSON file, calls the wrapper function for each scenario, and writes the output JSON file with the actual results merged in along with the expected results.
+
+The wrapper function has the structure shown in the diagram below, being defined in a driver script followed by a single line calling the test_format API.
 
 <img src="png/testtrapit_CSD.png">
 
-##### testtrapit.py
-[&uarr; Wrapper Function Code](#wrapper-function-code)<br />
-The text box below shows the code for the driving script, with the wrapper function def line as a placeholder for later expansion.
-```py
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import trapit
+##### purely_wrap_unit (skeleton)
 
-ROOT = os.path.dirname(__file__) + '\\'
-DELIM = '|'
-
-INP_JSON,                OUT_JSON,                    INP_JSON_INNER,                OUT_JSON_INNER                = \
-ROOT + 'trapit_py.json', ROOT + 'trapit_py_out.json', ROOT + 'trapit_py_inner.json', ROOT + 'trapit_py_out_inner.json'
-
-TITLE,   DELIMITER,   ACTIVE_YN,   UNIT_TEST,   META,   SCENARIOS,   INP,   OUT,   EXP,   ACT = \
-'title', 'delimiter', 'active_yn', 'Unit Test', 'meta', 'scenarios', 'inp', 'out', 'exp', 'act'
-
-INP_FIELDS,     OUT_FIELDS,      INP_VALUES,     EXP_VALUES,        ACT_VALUES = \
-'Input Fields', 'Output Fields', 'Input Values', 'Expected Values', 'Actual Values'
-
-def purely_wrap_unit(inp_groups, # input groups object
-                     scenario):  # scenario key
-
-trapit.test_unit(INP_JSON, OUT_JSON, purely_wrap_unit)
-```
-
-##### purely_wrap_unit
-[&uarr; Wrapper Function Code](#wrapper-function-code)<br />
-This is the outer level unit test wrapper function, returning an object with the output group objects actual values from the unit under test for a single scenario. It defines several local functions, including an inner level wrapper function, purely_wrap_unit_inner (whose
-bodies are shown later).
-```py
+```python
 def purely_wrap_unit(inp_groups): # input groups object
-
     def groups_from_group_field_pairs(group_field_lis): # group/field pairs list
-
+        return list(dict.fromkeys([gf.split(DELIM)[0] for gf in group_field_lis]))
     def groups_obj_from_gf_pairs(group_lis,        # groups list
                                  group_field_lis): # group/field pairs list
-
+        obj = {}
+        for g in group_lis:
+            gf_pairs = filter(lambda gf: gf[:len(g)] == g, group_field_lis)
+            obj[g] = [gf[len(g) + 1:] for gf in gf_pairs]
+        return obj
     def groups_obj_from_sgf_triples(sce,             # scenario
                                     group_lis,       # groups list
                                     sgf_triple_lis): # scenario/group/field triples list
-
-    def purely_wrap_unit_inner(inp_groups_inner) # input groups object (inner level)
-
+        this_sce_pairs = list(filter(lambda g: g[:len(sce)] == sce, sgf_triple_lis))
+        group_field_lis = [p[len(sce) + 1:] for p in this_sce_pairs]
+        return groups_obj_from_gf_pairs(group_lis, group_field_lis)
+    def purely_wrap_unit_inner(inp_groups_inner): # input groups object (inner level)
+        nonlocal sce_inp_ind
+        scenario_inner, exception_yn = sce_inp_lis[sce_inp_ind].split(DELIM)
+        sce_inp_ind += 1
+        if(exception_yn == 'Y'):
+            raise Exception('Exception thrown')
+        return groups_obj_from_sgf_triples(scenario_inner, out_group_lis, inp_groups[ACT_VALUES])
     def write_input_json():
-
+        ...
     def get_actuals():
+        ...
 
     out_group_lis, sce_inp_lis = write_input_json()
     sce_inp_ind = 0
@@ -993,389 +1146,100 @@ def purely_wrap_unit(inp_groups): # input groups object
     return get_actuals()
 ```
 
-##### write_input_json
-[&uarr; Wrapper Function Code](#wrapper-function-code)<br />
-This function writes out the inner level JSON file. It returns two objects: a list of (inner) output groups, and a list of (inner) scenarios; these are referenced in purely_wrap_unit_inner.
-```py
-def write_input_json():
-    inp_group_field_lis = inp_groups[INP_FIELDS]
-    inp_group_lis = groups_from_group_field_pairs(inp_group_field_lis)
-    out_group_field_lis = inp_groups[OUT_FIELDS]
-    out_group_lis = groups_from_group_field_pairs(out_group_field_lis)
-    title, delimiter = inp_groups[UNIT_TEST][0].split(DELIM)
+#### Step 3: Format Results
+[&uarr; Unit Testing Process](#unit-testing-process-3)<br />
 
-    meta = {TITLE:     title,
-            DELIMITER: delimiter,
-            INP:       groups_obj_from_gf_pairs(inp_group_lis, inp_group_field_lis),
-            OUT:       groups_obj_from_gf_pairs(out_group_lis, out_group_field_lis)
-    }
-    scenarios = {}
-    sce_inp_lis = []
-    for s_row in inp_groups['Scenario']:
-        sce, active_yn = s_row.split(DELIM)
-        if active_yn == 'Y':
-            sce_inp_lis.append(sce)
-        sce_inp = groups_obj_from_sgf_triples(sce, inp_group_lis, inp_groups[INP_VALUES])
-        sce_out = groups_obj_from_sgf_triples(sce, out_group_lis, inp_groups[EXP_VALUES])
-        scenarios[sce] = {
-            ACTIVE_YN: active_yn,
-            INP:       sce_inp,
-            OUT:       sce_out
-        }
-    inp_json_obj = {
-        META:       meta,
-        SCENARIOS:  scenarios
-    }
-    with open(INP_JSON_INNER, 'w') as inp_f:
-        json.dump(inp_json_obj, inp_f, indent=4) 
-    return [out_group_lis, sce_inp_lis]
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter:
+- `test_format` is the function from the trapit Python package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
+
+##### testtrapit.py (skeleton)
+```powershell
+import sys, os, json, re
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import trapit
+
+DELIM = '|'
+ROOT = os.path.dirname(__file__)
+NPM_ROOT,                                  INP_JSON_INNER,                OUT_JSON_INNER                = \
+ROOT + '/../powershell_utils/TrapitUtils', ROOT + 'trapit_py_inner.json', ROOT + 'trapit_py_out_inner.json'
+def purely_wrap_unit(inp_groups): # input groups object
+    ...
+
+trapit.test_format(ROOT, NPM_ROOT, 'trapit_py', purely_wrap_unit)
 ```
-
-##### get_actuals
-[&uarr; Wrapper Function Code](#wrapper-function-code)<br />
-This function extract the actual results from the JSON output file created by the inner level call to trapit.test_unit. It returns an object with output groups as keys and actual values lists as values for given scenario.
-```py
-def get_actuals():
-    with open(OUT_JSON_INNER, encoding='utf-8') as out_f:
-        out_json_obj = json.loads(out_f.read())
-    meta, scenarios = out_json_obj[META], out_json_obj[SCENARIOS]
-
-    g_unit_test = [meta[TITLE] + DELIM + meta[DELIMITER]]
-
-    g_inp_fields, g_out_fields, g_inp_values, g_exp_values, g_act_values = [], [], [], [], []
-    for g in meta[INP]:
-        for i in meta[INP][g]:
-            g_inp_fields.append(g + DELIM + i)
-
-    for g in meta[OUT]:
-        for i in meta[OUT][g]:
-            g_out_fields.append(g + DELIM + i)
-
-    for s in scenarios:
-        for g in scenarios[s][INP]:
-            for i in scenarios[s][INP][g]:
-                g_inp_values.append(s + DELIM + g + DELIM + i)
-        for g in scenarios[s][OUT]:
-            for i in scenarios[s][OUT][g][EXP]:
-                g_exp_values.append(s + DELIM + g + DELIM + i)
-            for i in scenarios[s][OUT][g][ACT]:
-                g_act_values.append(s + DELIM + g + DELIM + i)
-
-    os.remove(INP_JSON_INNER)
-    os.remove(OUT_JSON_INNER)
-    return {
-        UNIT_TEST:  g_unit_test,
-        INP_FIELDS: g_inp_fields,
-        OUT_FIELDS: g_out_fields,      
-        INP_VALUES: g_inp_values,     
-        EXP_VALUES: g_exp_values,        
-        ACT_VALUES: g_act_values
-    }
-```
-
-##### Small functions
-[&uarr; Wrapper Function Code](#wrapper-function-code)<br />
-###### groups_from_group_field_pairs
-This function returns a list of distinct groups from an input list of group/field pairs.
-```py
-def groups_from_group_field_pairs(group_field_lis): # group/field pairs list
-    return list(dict.fromkeys([gf.split(DELIM)[0] for gf in group_field_lis]))
-```
-###### groups_obj_from_gf_pairs
-This function returns an object with groups as keys and field lists as values, based on input lists of groups and group/field pairs.
-```py
-def groups_obj_from_gf_pairs(group_lis,        # groups list
-                             group_field_lis): # group/field pairs list
-    obj = {}
-    for g in group_lis:
-        gf_pairs = filter(lambda gf: gf[:len(g)] == g, group_field_lis)
-        obj[g] = [gf[len(g) + 1:] for gf in gf_pairs]
-    return obj
-
-```
-###### groups_obj_from_sgf_triples
-This function returns an object with groups as keys and field lists as values for given scenario, based on input scenario and lists of groups and scenario/group/field triples
-```py
-def groups_obj_from_sgf_triples(sce,             # scenario
-                                group_lis,       # groups list
-                                sgf_triple_lis): # scenario/group/field triples list
-    this_sce_pairs = list(filter(lambda g: g[:len(sce)] == sce, sgf_triple_lis))
-    group_field_lis = [p[len(sce) + 1:] for p in this_sce_pairs]
-    return groups_obj_from_gf_pairs(group_lis, group_field_lis)
-
-```
-###### purely_wrap_unit_inner
-This function is the inner level unit test wrapper function, returning an object with the output group objects 'actual' values from unit under test, which is here trapit.test_unit. It returns the 'Actual Values' group values specified in the outer level for the given scenario, ignoring the (required) input groups parameter in this special case. It references two arrays held in the scope of the outer level wrapper function, and also an index into the scenarios list that has the same outer level scope.
-```py
-def purely_wrap_unit_inner(inp_groups_inner): # input groups object (inner level)
-    nonlocal sce_inp_ind
-    scenario_inner = sce_inp_lis[sce_inp_ind]
-    sce_inp_ind += 1
-    return groups_obj_from_sgf_triples(scenario_inner, out_group_lis, inp_groups[ACT_VALUES])
-```
-
-### Scenario Category ANalysis (SCAN)
-[&uarr; Unit Testing](#unit-testing)<br />
-[&darr; Simple Category Sets](#simple-category-sets)<br />
-[&darr; Composite Category Sets](#composite-category-sets)<br />
-[&darr; Scenario Category Mapping](#scenario-category-mapping)<br />
-
-The art of unit testing lies in choosing a set of scenarios that will produce a high degree of confidence in the functioning of the unit under test across the often very large range of possible inputs.
-
-A useful approach to this is to think in terms of categories of inputs, where we reduce large ranges to representative categories. Categories are chosen to explore the full range of potential behaviours of the unit under test.
-
-In this section we identify the category sets for the problem, and tabulate the corresponding categories. We need to consider which category sets can be tested independently of each other, and which need to be considered in combination. We can then obtain a set of scenarios to cover all relevant combinations of categories.
-
-#### Simple Category Sets
-[&uarr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan)<br />
-[&darr; SAF - Scenario active flag](#saf---scenario-active-flag)<br />
-[&darr; MUL-0 - Multiplicity including zero](#mul-0---multiplicity-including-zero)<br />
-[&darr; MUL-1 - Multiplicity excluding zero](#mul-1---multiplicity-excluding-zero)<br />
-[&darr; INV - Invalidity Type](#inv---invalidity-type)<br />
-
-In this section we identify some simple category sets to apply.
-
-##### SAF - Scenario active flag
-[&uarr; Simple Category Sets](#simple-category-sets)<br />
-
-We want to check that active scenarios are processed while inactive ones are ignored.
-
-| Code | Description       |
-|:----:|:------------------|
-|  Y   | Scenario active   |
-|  N   | Scenario inactive |
-
-##### MUL-0 - Multiplicity including zero
-[&uarr; Simple Category Sets](#simple-category-sets)<br />
-
-We want to check behaviour when there are 0, 1, or more than 1, records for each entity, for those entities where zero multiplicity makes sense.
-
-| Code | Description     |
-|:----:|:----------------|
-|  0   | Zero values     |
-|  1   | 1 value         |
-|  m   | Multiple values |
-
-This category set is applied to the following entities:
-
-| Category Set | Description               |
-|:------------:|:--------------------------|
-| IGM          | Input group multiplicity  |
-| OGM          | Output group multiplicity |
-| IVM          | Input value multiplicity  |
-| OVM          | Output value multiplicity |
-
-##### MUL-1 - Multiplicity excluding zero
-[&uarr; Simple Category Sets](#simple-category-sets)<br />
-
-We want to check behaviour when there are 1, or more than 1, records for each entity, for those entities where zero multiplicity does not make sense.
-
-| Code | Description     |
-|:----:|:----------------|
-|  1   | 1 value         |
-|  m   | Multiple values |
-
-This category set is applied to the following entities:
-
-| Category Set | Description                       |
-|:------------:|:----------------------------------|
-| SCM          | Scenario multiplicity             |
-| IFM          | Input field multiplicity          |
-| OFM          | Output field multiplicity         |
-| DCM          | Delimiter characters multiplicity |
-
-##### INV - Invalidity Type
-[&uarr; Simple Category Sets](#simple-category-sets)<br />
-
-A unit test returns a status of Failure if any output group returns a status of Failure, which happens when the actual output set of records differs from the expected output set.
-
-We can categorise types of invalidity by set cardinality differences (with E for expected set cardinality, and A for actual set cardinality). We want to check behaviour for each type of invalidity as well as the valid case.
-
-| Code    | Description                                                 |
-|:-------:|:------------------------------------------------------------|
-|  VAL    | Same cardinalities and all records the same                 |
-|  E=A    | Same cardinalities but at least one record differs in value |
-|  E&gt;A | More records in expected set than in actual set             |
-|  A&gt;E | More records in actual set than in expected set             |
-
-#### Composite Category Sets
-[&uarr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan)<br />
-[&darr; IGM / OGM](#igm--ogm)<br />
-[&darr; SCM / SAF ](#scm--saf-)<br />
-
-The category sets considered can be treated as largely independent, with the exception that having zero multiplicity for both input and output groups doesn't make sense, and making a scenario inactive means nothing else can be tested within that scenario. Therefore we can take the following combinations of the category sets IGM, OGM as the basis of our scenario category mapping, and ensure that the combinations noted below of SCM and SAF are handled.
-
-The Invalidity Type category set could be tested within the third scenario, but we'll add a fourth scenario for greater clarity.
-
-##### IGM / OGM
-[&uarr; Composite Category Sets](#composite-category-sets)<br />
-
-Ensure the zero edge case for input groups and output groups are handled separately, and note that 0 for either group implies no fields are possible.
-
-| IGM | OGM | IFM | OFM |
-|:---:|:---:|:---:|:---:|
-|  0  |  1  |  -  |     |
-|  1  |  0  |     |  -  |
-|  m  |  m  |     |     |
-
-##### SCM / SAF 
-[&uarr; Composite Category Sets](#composite-category-sets)<br />
-
-Ensure that the inactive scenario category occurs within a multi-scenario situation, so that other categories can be simultaneously tested.
-
-| SCM | SAF |
-|:---:|:---:|
-|  1  |  Y  |
-|  m  |  N  |
-
-#### Scenario Category Mapping
-[&uarr; Scenario Category ANalysis (SCAN)](#scenario-category-analysis-scan)<br />
-
-We now want to construct a set of scenarios based on the category sets identified, covering each individual category, and also covering combinations of categories that may interact.
-
-In this case, the first four category sets may be considered as a single composite set with the combinations listed below forming the scenario keys, while the two SIZ categories are covered in the first two scenarios.
-
-| #  | IGM | OGM | IVM | OVM | SCM | IFM | OFM | DCM | SAF | INV | Description                                                                |
-|:---|:---:|:----|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:-------------------------------------------------------------------------------------|
-| 1  |  0  |  1  |  -  |  0  |  1  |  -  |  1  |  1  |  Y  | VAL | Zero input groups, 1 of other entities where possible; active scenario; valid | 
-| 2  |  1  |  0  |  1  |  -  |  1  |  1  |  -  |  1  |  Y  | VAL | Zero output groups, 1 of other entities where possible; active scenario; valid | 
-| 3  |  m  |  m  |  m  |  m  |  m  |  m  |  m  |  m  |  N  | VAL | Multiple entities; one inactive scenario; all valid  | 
-| 4  |  1  |  1  |  m  |  m  |  m  |  m  |  m  |  m  |  Y  |  *  | One input and output groups; multiple other entities; active scenarios; each type of invalid scenario | 
+This script contains the wrapper function, passing it in a call to the trapit library function test_format.
 
 ### Unit Test Results
 [&uarr; Unit Testing](#unit-testing)<br />
-[&darr; Results Summary](#results-summary)<br />
-[&darr; Unit Test Report: Python Unit Tester](#unit-test-report-python-unit-tester)<br />
+[&darr; Unit Test Report - Trapit Python Tester](#unit-test-report---trapit-python-tester)<br />
+[&darr; Results for Scenario 18: Multiple scenarios [Category Set: Scenario Multiplicity]](#results-for-scenario-18-multiple-scenarios-category-set-scenario-multiplicity)<br />
 
-#### Results Summary
-[&uarr; Unit Test Results](#unit-test-results)<br />
-
+The unit test script creates a results subfolder, with results in text and HTML formats, in the script folder, and outputs the following summary:
 ```
-Unit Test Results Summary for Folder ./externals/python
-=======================================================
- File                 Title               Inp Groups  Out Groups  Tests  Fails  Folder            
---------------------  ------------------  ----------  ----------  -----  -----  ------------------
-*colgroup_out.json    Col Group                    3           4      5      1  col-group         
- helloworld_out.json  Hello World                  0           1      1      0  hello-world       
- trapit_py_out.json   Python Unit Tester           7           6      4      0  python-unit-tester
-
-1 externals failed, see ./externals/python for scenario listings
-colgroup_out.json
+Results summary for file: [MY_PATH]\trapit_python_tester\unit_test/trapit_py_out.json
+=====================================================================================
+File:          trapit_py_out.json
+Title:         Trapit Python Tester
+Inp Groups:    7
+Out Groups:    8
+Tests:         31
+Fails:         1
+Folder:        trapit-python-tester
 ```
+
+#### Unit Test Report - Trapit Python Tester
+[&uarr; Unit Test Results](#unit-test-results-3)<br />
+
+Here we show the scenario-level summary of results, and show the detail for one of the scenarios, in HTML format.
 
 You can review the HTML formatted unit test results here:
 
-- [Unit Test Report: Python Unit Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/unit_test/python-unit-tester/python-unit-tester.html)
+- [Unit Test Report: Trapit Python Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/trapit_python_tester/unit_test/trapit-python-tester/trapit-python-tester.html)
 
-#### Unit Test Report: Python Unit Tester
-[&uarr; Unit Test Results](#unit-test-results)<br />
-```
-Unit Test Report: Python Unit Tester
-====================================
+<img src="png/summary-trapitpy.png">
 
-      #    Scenario                                                                                               Fails (of 6)  Status 
-      ---  -----------------------------------------------------------------------------------------------------  ------------  -------
-      1    Zero input groups, 1 of other entities where possible; active scenario; valid                          0             SUCCESS
-      2    Zero output groups, 1 of other entities where possible; active scenario; valid                         0             SUCCESS
-      3    Multiple entities; one inactive scenario; all valid                                                    0             SUCCESS
-      4    One input and output groups; multiple other entities; active scenarios; each type of invalid scenario  0             SUCCESS
+#### Results for Scenario 18: Multiple scenarios [Category Set: Scenario Multiplicity]
+[&uarr; Unit Test Results](#unit-test-results-3)<br />
+[&darr; Input Groups](#input-groups)<br />
+[&darr; Output Groups](#output-groups)<br />
 
-Test scenarios: 0 failed of 4: SUCCESS
-======================================
-```
-Here are the output results for the first scenario (slightly edited for brevity):
+##### Input Groups
+[&uarr; Results for Scenario 18: Multiple scenarios [Category Set: Scenario Multiplicity]](#results-for-scenario-18-multiple-scenarios-category-set-scenario-multiplicity)<br />
+<img src="png/scenario_18_inp-trapitpy.png">
 
-```
-SCENARIO 1: Zero input groups, 1 of other entities where possible; active scenario; valid {
-===========================================================================================
-   INPUTS
-   ======
-      GROUP 1: Unit Test {
-      ====================
-            #  Title        Delimiter
-            -  -----------  ---------
-            1  Inner title  ;        
-      }
-      GROUP 2: Input Fields: Empty
-      ============================
-      GROUP 3: Output Fields {
-      ========================
-            #  Group           Field         
-            -  --------------  --------------
-            1  Output Group 1  Output Field 1
-      }
-      GROUP 4: Scenario {
-      ===================
-            #  Scenario          Active Y/N
-            -  ----------------  ----------
-            1  Inner scenario 1  Y         
-      }
-      GROUP 5: Input Values: Empty
-      ============================
-      GROUP 6: Expected Values {
-      ==========================
-            #  Scenario          Group           Row CSV         
-            -  ----------------  --------------  ----------------
-            1  Inner scenario 1  Output Group 1  Expected value 1
-      }
-      GROUP 7: Actual Values {
-      ========================
-            #  Scenario          Group           Row CSV       
-            -  ----------------  --------------  --------------
-            1  Inner scenario 1  Output Group 1  Actual value 1
-      }
-   OUTPUTS
-   =======
-      GROUP 1: Unit Test {
-      ====================
-            #  Title        Delimiter
-            -  -----------  ---------
-            1  Inner title  ;        
-      } 0 failed of 1: SUCCESS
-      ========================
-      GROUP 2: Input Fields: Empty as expected: SUCCESS
-      =================================================
-      GROUP 3: Output Fields {
-      ========================
-            #  Group           Field         
-            -  --------------  --------------
-            1  Output Group 1  Output Field 1
-      } 0 failed of 1: SUCCESS
-      ========================
-      GROUP 4: Input Values: Empty as expected: SUCCESS
-      =================================================
-      GROUP 5: Expected Values {
-      ==========================
-            #  Scenario          Group           Row CSV         
-            -  ----------------  --------------  ----------------
-            1  Inner scenario 1  Output Group 1  Expected value 1
-      } 0 failed of 1: SUCCESS
-      ========================
-      GROUP 6: Actual Values {
-      ========================
-            #  Scenario          Group           Row CSV       
-            -  ----------------  --------------  --------------
-            1  Inner scenario 1  Output Group 1  Actual value 1
-      } 0 failed of 1: SUCCESS
-      ========================
-} 0 failed of 6: SUCCESS
-========================
-```
+##### Output Groups
+[&uarr; Results for Scenario 18: Multiple scenarios [Category Set: Scenario Multiplicity]](#results-for-scenario-18-multiple-scenarios-category-set-scenario-multiplicity)<br />
+<img src="png/scenario_18_out-trapitpy.png">
+## Folder Structure
+[&uarr; In This README...](#in-this-readme)<br />
+
+The project folder structure is shown below.
+
+<img src="png/folders-trapit_python_tester.png">
+
+There are four subfolders below the trapit root folder, which has README and module:
+- `examples`: Two working Python examples are included in their own subfolders, with both test scripts and a main script that shows how the unit under test would normally be called
+- `png`: This holds the image files for the README
+- `powershell_utils`: PowerShell packages, with JavaScript Trapit module included in TrapitUtils
+- `unit_test`: Root folder for unit testing, with subfolder having the results files
 
 ## See Also
 [&uarr; In This README...](#in-this-readme)<br />
-
-- [Database API Viewed As A Mathematical Function: Insights into Testing](https://www.slideshare.net/brendanfurey7/database-api-viewed-as-a-mathematical-function-insights-into-testing)
+- [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html)
 - [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
-- [Trapit JavaScript Tester/Formatter - GitHub module](https://github.com/BrenPatF/trapit_nodejs_tester)
-- [Trapit Python Tester - GitHub module](https://github.com/BrenPatF/trapit_python_tester)
-- [Trapit Oracle Tester - GitHub module](https://github.com/BrenPatF/trapit_oracle_tester)
-- [Powershell Utilities - GitHub module](https://github.com/BrenPatF/powershell_utils)
-- [Trapit Python Tester - Python Package Index module](https://pypi.org/project/trapit/)
-- [Timer Set Python Code Timer - GitHub module](https://github.com/BrenPatF/timerset_python)
+- [Node.js Downloads](https://nodejs.org/en/download)
+- [Trapit - JavaScript Unit Testing/Formatting Utilities Module](https://github.com/BrenPatF/trapit_nodejs_tester)
+- [Trapit - PowerShell Unit Testing Utilities Module](https://github.com/BrenPatF/powershell_utils/tree/master/TrapitUtils)
+- [Trapit - Python Unit Testing Module - Python Package Index](https://pypi.org/project/trapit/)
+- [Trapit - Python Unit Testing Module - GitHub](https://github.com/BrenPatF/trapit_python_tester)
+
+## Software Versions
+
+- Windows 11
+- Powershell 7
+- npm 6.13.4
+- Node.js v12.16.1
+- Python 3.13.2
 
 ## License
-[&uarr; In This README...](#in-this-readme)<br />
-
 MIT
-
