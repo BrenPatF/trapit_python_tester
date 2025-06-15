@@ -1194,7 +1194,7 @@ Here we show the scenario-level summary of results, and show the detail for one 
 
 You can review the HTML formatted unit test results here:
 
-- [Unit Test Report: Trapit Python Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/trapit_python_tester/unit_test/trapit-python-tester/trapit-python-tester.html)
+- [Unit Test Report: Trapit Python Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/unit_test/trapit-python-tester/trapit-python-tester.html)
 
 <img src="png/summary-trapitpy.png">
 
