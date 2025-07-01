@@ -15,7 +15,7 @@ There is also a PowerShell module, [Trapit - PowerShell Unit Testing Utilities M
 
 This blog post, [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html) provides guidance on effective selection of scenarios for unit testing.
 
-There is an extended Usage section below that illustrates the use of the design pattern for Python unit testing by means of two examples.
+There is an extended Usage section below that illustrates the use of the design pattern for Python unit testing by means of two examples. In addition, the main Python unit testing API is itself tested using the design pattern.
 
 # In This README...
 [&darr; Background](#background)<br />
@@ -36,13 +36,13 @@ I explained the concepts for the unit testing design pattern in relation specifi
 I later named the approach [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) when I applied it in Javascript and wrote a JavaScript program to format results both in plain text and as HTML pages:
 - [Trapit - JavaScript Unit Testing/Formatting Utilities Module](https://github.com/BrenPatF/trapit_nodejs_tester)
 
-The module also allowed for the formatting of results obtained from testing in languages other than JavaScript by means of an intermediate output JSON file. In 2021 I developed a powershell module that included a utility to generate a template for the JSON input scenarios file required by the design pattern:
+The module also allowed for the formatting of results obtained from testing in languages other than JavaScript by means of an intermediate output JSON file. In 2021 I developed a PowerShell module that included a utility to generate a template for the JSON input scenarios file required by the design pattern:
 - [Trapit - PowerShell Unit Testing Utilities Module](https://github.com/BrenPatF/powershell_utils/tree/master/TrapitUtils)
 
 Also in 2021 I developed a systematic approach to the selection of unit test scenarios:
 - [Unit Testing, Scenarios and Categories: The SCAN Method](https://brenpatf.github.io/2021/10/17/unit-testing-scenarios-and-categories-the-scan-method.html)
 
-In early 2023 I extended both the the JavaScript results formatter, and the powershell utility to incorporate Category Set as a scenario attribute. Both utilities support use of the design pattern in any language, while the unit testing driver utility is language-specific and is currently available in Powershell, JavaScript, Python and Oracle PL/SQL versions.
+In early 2023 I extended both the the JavaScript results formatter, and the PowerShell utility to incorporate Category Set as a scenario attribute. Both utilities support use of the design pattern in any language, while the unit testing driver utility is language-specific and is currently available in PowerShell, JavaScript, Python and Oracle PL/SQL versions.
 ## Usage
 [&uarr; In This README...](#in-this-readme)<br />
 [&darr; General Usage](#general-usage)<br />
@@ -53,7 +53,7 @@ As noted above, the JavaScript module allows for unit testing of JavaScript prog
 
 In this section we'll start by describing the steps involved in [The Math Function Unit Testing Design Pattern](https://brenpatf.github.io/2023/06/05/the-math-function-unit-testing-design-pattern.html) at an overview level. This will show how the generic PowerShell and JavaScript utilities fit in alongside the language-specific driver utilities.
 
-Then we'll show how to use the design pattern in unit testing Python programs by means of two simple examples.
+Then we'll show how to use the design pattern in unit testing Python programs, first in general, and then by means of two simple examples.
 
 ### General Usage
 [&uarr; Usage](#usage)<br />
@@ -185,7 +185,7 @@ The test driver API,  `test_format`, is language-specific, and this one is for t
 
 Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
 
-- `test_format` is the function from the trapit Python package that calls the main test driver function that contains the wrapper function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results. It takes as parameters:
+- `test_format` is the function from the trapit Python package that calls the main test driver function, test_unit, that contains the wrapper function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results. It takes as parameters:
 
     - `ut_root`: unit test root folder
     - `npm_root`: parent folder of the JavaScript node_modules npm root folder
@@ -197,6 +197,7 @@ Step 3 involves formatting the results contained in the JSON output file from st
     - summary of results
 
 ##### teststem.py
+The test driver script defines the wrapper function, and passes it into the entry point trapit library API.
 ```powershell
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
@@ -351,9 +352,9 @@ The PowerShell API to generate a template JSON file can be run with the followin
 Import-Module ..\..\powershell_utils\TrapitUtils\TrapitUtils
 Write-UT_Template 'helloworld_py' '|' 'Hello World - Python'
 ```
-This creates the template JSON file, helloworld_temp.json, which contains an element for each of the scenarios, with the appropriate category set and active flag. In this case there is a single scenario, with empty input, and a single record in the output group with the default value from the output groups CSV file. Here is the complete file:
+This creates the template JSON file, helloworld_py_temp.json, which contains an element for each of the scenarios, with the appropriate category set and active flag. In this case there is a single scenario, with empty input, and a single record in the output group with the default value from the output groups CSV file. Here is the complete file:
 
-##### helloworld_temp.json
+##### helloworld_py_temp.json
 ```js
 {
   "meta": {
@@ -400,7 +401,7 @@ This lambda expression is included in the script testhelloworld.py and passed as
 
 Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
 
-- `test_format` is the function from the trapit package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
+- `test_format` is the function from the trapit package that calls the main test driver function, test_unit, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
 
 ###### testhelloworld.py
 ```python
@@ -460,7 +461,7 @@ Formatted: 7/6/2025, 11:01:46
 ##### Scenario 1: No input
 [&uarr; Unit Test Results](#unit-test-results-1)<br />
 
-This is the scenario page in text format, with only one scenario.
+This is the page for the single scenario in text format.
 
 ```
 SCENARIO 1: No input [Category Set: Global] {
@@ -610,7 +611,7 @@ A PowerShell utility uses these CSV files, together with one for scenarios, disc
 
 As noted earlier, a useful approach to scenario selection can be to think in terms of categories of inputs, where we reduce large ranges to representative categories.
 
-###### Generic Category Sets - ColGroup
+###### Generic Category Sets
 
 As explained in the article mentioned earlier, it can be very useful to think in terms of generic category sets that apply in many situations. Multiplicity is relevant here (as it often is):
 
@@ -632,7 +633,7 @@ Apply to:
 <li>Delimiter (one or multiple only)</li>
 </ul>
 
-###### Categories and Scenarios - ColGroup
+###### Categories and Scenarios
 
 After analysis of the possible scenarios in terms of categories and category sets, we can depict them on a Category Structure diagram:
 
@@ -718,18 +719,6 @@ Step 2 requires the writing of a wrapper function that is passed into a unit tes
 
 ###### purely_wrap_unit
 ```python
-import sys, os
-from datetime import datetime
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-import trapit, colgroup as cg
-
-ROOT = os.path.dirname(__file__) + '\\'
-DELIM = '|'
-INPUT_JSON,             OUTPUT_JSON,                INPUT_FILE,            LOG_FILE                  = \
-ROOT + 'colgroup.json', ROOT + 'colgroup_out.json', ROOT + 'ut_group.csv', ROOT + 'ut_group.csv.log'
-GRP_LOG,   GRP_SCA,   GRP_LIN, GRP_LAI,    GRP_SBK,     GRP_SBV       = \
-'Log',     'Scalars', 'Lines', 'listAsIs', 'sortByKey', 'sortByValue'
-
 def from_CSV(csv,  # string of delimited values
              col): # 0-based column index
     return csv.split(DELIM)[col]
@@ -771,8 +760,8 @@ def purely_wrap_unit(inp_groups): # input groups object
 ##### Step 3: Format Results
 [&uarr; Unit Testing Process](#unit-testing-process-2)<br />
 
-Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter:
-- `test_format` is the function from the trapit Python package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
+- `test_format` is the function from the trapit package that calls the main test driver function, test_unit, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
 
 ###### testcolgroup.py (skeleton)
 
@@ -781,10 +770,13 @@ import sys, os
 from datetime import datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import trapit, colgroup as cg
+
 ROOT = os.path.dirname(__file__)
 DELIM = '|'
 INPUT_FILE,            LOG_FILE,                    NPM_ROOT = \
 ROOT + '/ut_group.csv', ROOT + '/ut_group.csv.log', ROOT + '/../../powershell_utils/TrapitUtils'
+GRP_LOG,   GRP_SCA,   GRP_LIN, GRP_LAI,    GRP_SBK,     GRP_SBV       = \
+'Log',     'Scalars', 'Lines', 'listAsIs', 'sortByKey', 'sortByValue'
 ...
 def purely_wrap_unit(inp_groups): # input groups object
     ...
@@ -798,6 +790,7 @@ This script contains the wrapper function, passing it in a call to the trapit li
 #### Unit Test Results
 [&uarr; Example 2 - ColGroup](#example-2---colgroup)<br />
 [&darr; Unit Test Report - ColGroup](#unit-test-report---colgroup)<br />
+[&darr; Scenario 16: Actual/expected mismatch [Category Set: Errors]](#scenario-16-actualexpected-mismatch-category-set-errors)<br />
 
 The unit test script creates a results subfolder, with results in text and HTML formats, in the script folder, and outputs the following summary:
 ```
@@ -815,7 +808,6 @@ Folder:        colgroup---python
 
 ##### Unit Test Report - ColGroup
 [&uarr; Unit Test Results](#unit-test-results-2)<br />
-[&darr; Scenario 16: Actual/expected mismatch [Category Set: Errors]](#scenario-16-actualexpected-mismatch-category-set-errors)<br />
 
 Here we show the scenario-level summary of results for the specific example, and show the detail for one of the failing scenarios.
 
@@ -827,8 +819,8 @@ You can review the HTML formatted unit test results here:
 This is a screenshot of the summary page in HTML format.
 <img src="png/summary-colgroup.png">
 
-###### Scenario 16: Actual/expected mismatch [Category Set: Errors]
-[&uarr; Unit Test Report - ColGroup](#unit-test-report---colgroup)<br />
+##### Scenario 16: Actual/expected mismatch [Category Set: Errors]
+[&uarr; Unit Test Results](#unit-test-results-2)<br />
 
 This scenario is designed to fail, with one of the expected values in group 4 set to 9999 instead of the correct value of 2,  just to show how mismatches are displayed.
 <img src="png/scenario_16-colgroup.png">
@@ -998,8 +990,8 @@ A PowerShell utility uses these CSV files, together with one for scenarios, disc
 
 ##### Scenario Category ANalysis (SCAN)
 [&uarr; Step 1: Create Input Scenarios File](#step-1-create-input-scenarios-file-3)<br />
-[&darr; Generic Category Sets](#generic-category-sets)<br />
-[&darr; Categories and Scenarios](#categories-and-scenarios)<br />
+[&darr; Generic Category Sets](#generic-category-sets-1)<br />
+[&darr; Categories and Scenarios](#categories-and-scenarios-1)<br />
 
 The art of unit testing lies in choosing a set of scenarios that will produce a high degree of confidence in the functioning of the unit under test across the often very large range of possible inputs.
 
@@ -1149,10 +1141,10 @@ def purely_wrap_unit(inp_groups): # input groups object
 #### Step 3: Format Results
 [&uarr; Unit Testing Process](#unit-testing-process-3)<br />
 
-Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter:
-- `test_format` is the function from the trapit Python package that calls the main test driver function, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
+Step 3 involves formatting the results contained in the JSON output file from step 2, via the JavaScript formatter, and this step can be combined with step 2 for convenience.
+- `test_format` is the function from the trapit Python package that calls the main test driver function, test_unit, then passes the output JSON file name to the JavaScript formatter and outputs a summary of the results.
 
-##### testtrapit.py (skeleton)
+##### testtrapit\.py (skeleton)
 ```powershell
 import sys, os, json, re
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -1164,6 +1156,7 @@ NPM_ROOT,                                  INP_JSON_INNER,                OUT_JS
 ROOT + '/../powershell_utils/TrapitUtils', ROOT + 'trapit_py_inner.json', ROOT + 'trapit_py_out_inner.json'
 def purely_wrap_unit(inp_groups): # input groups object
     ...
+    return get_actuals()
 
 trapit.test_format(ROOT, NPM_ROOT, 'trapit_py', purely_wrap_unit)
 ```
@@ -1194,7 +1187,7 @@ Here we show the scenario-level summary of results, and show the detail for one 
 
 You can review the HTML formatted unit test results here:
 
-- [Unit Test Report: Trapit Python Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/unit_test/trapit-python-tester/trapit-python-tester.html)
+- [Unit Test Report: Trapit Python Tester](http://htmlpreview.github.io/?https://github.com/BrenPatF/trapit_python_tester/blob/master/trapit_python_tester/unit_test/trapit-python-tester/trapit-python-tester.html)
 
 <img src="png/summary-trapitpy.png">
 
